@@ -1,5 +1,5 @@
 ---
-title: Local Docker Deployment
+sidebar_position: 1
 ---
 
 # Local Docker Deployment
