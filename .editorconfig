@@ -1,0 +1,36 @@
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+max_line_length = 120
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.java]
+# Java source files use an indentation of 4 spaces
+indent_size = 4
+# Continuation indent for long lines
+continuation_indent_size = 4
+
+# Spring Boot specific adjustments could go here, typically matching Java conventions
+
+# File header template (optional, uncomment and customize if needed)
+# file_header_template = /path/to/header/template
+
+# Optimize imports settings
+ij_java_imports_layout = *,java.**,javax.**,org.springframework.**,^
+
+# Prevent wildcard imports
+ij_java_class_count_to_use_import_on_demand = 99
+ij_java_names_count_to_use_import_on_demand = 99
+
+# Ensure code style consistency for annotations
+ij_java_space_before_annotation_parameter_list = false
+ij_java_space_inside_annotation_parens = false
+
+# Optional: Configure folding settings for methods and imports to reduce visual clutter in the IDE
+ij_java_folding_collapsible_imports = true
+ij_java_folding_methods = true
