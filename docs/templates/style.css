@@ -1,0 +1,29 @@
+.profile{
+    display: flex;
+    align-items: center;
+}
+
+.profile img{
+    width: 80px;
+    height: 80px;
+    background-size: cover;
+    border-radius: 50%;
+    margin-right: 20px;
+}
+
+.profile h1{
+    margin: 0;
+    font-size: 25px;
+}
+
+.foto{
+    margin-bottom: 10px;
+}
+
+.nivel h1{
+    font-size: 20px;
+}
+
+.nivel h2{
+    font-size: 15px;
+}
