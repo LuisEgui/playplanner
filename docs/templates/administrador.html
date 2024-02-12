@@ -1,0 +1,66 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>Administrador</title>
+</head>
+<body>
+    <h1> Administrador </h1>
+    <hr>
+   
+    <div id="partidos-en-organizacion">
+        <h2> Partidos que se están organizando </h2>
+
+        <div>
+            <h3> Partido #--- </h3>
+            <p> Organizador: --- <p>
+            <p> Participantes: --- <p>
+            <p> Otra informacion: --- <p>
+            <form method="GET"> <input type="submit" value="Ir a la página del partido"></form>
+        </div>
+    </div>
+    <hr>
+
+    <div id="reportes">
+        <h2> Reportes </h2>
+
+        <div>
+            <div> 
+                <em> Reporte de - en partido - </em>
+                <a href=""> Ir a la página del partido </a> 
+            </div>
+            
+            <p> Contenido del reporte</p>
+            
+
+            <form method="POST">
+                <div>
+                    <label for="respuesta"> Respuesta (opcional): </label>
+                    <textarea id="respuesta"> </textarea>
+                </div>
+                <input type="submit" id="cerrar-incidencia" value="Enviar y cerrar incidencia">
+            </form>
+        </div>
+
+    </div>
+    <hr>
+
+    <div id="banear-usuarios">
+        <h2> Retirar acceso a la plataforma</h2>
+
+        <form method="POST">
+            <div>
+                <label for="nombre-usuario"> Nombre de usuario: </label>
+                <input type="text" id="nombre-usuario" required>
+            </div>
+                 
+            <div>
+                <label for="comentarios"> Comentarios (opcional): </label>
+                <textarea id="comentarios"> </textarea>
+            </div>
+            <input type="submit">
+        </form>
+    </div>
+    <hr>
+</body>
+</html>
