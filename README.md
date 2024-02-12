@@ -1,4 +1,4 @@
-# Dunktomic
+# PlayPlanner
 
 ## Dependencies
 
