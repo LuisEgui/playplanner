@@ -1,0 +1,35 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>Buscar partidos</title>
+</head>
+<body>
+    <h1> Busca partidos que te interesen! </h1>
+    
+    <form>
+        <label for="fecha"> Fecha: </label>
+        <input type="date" id="fecha">
+        <hr>
+
+        <label for="hora-inicio"> Disponibilidad desde </label>
+        <input type="time" id="hora-inicio">
+        <label for="hora-fin">  hasta </label>
+        <input type="time" id="hora-fin">
+        <hr>
+
+        <label for="deporte"> Deporte: </label>
+        <select id="deporte">
+            <option>Baloncesto</option>
+            <option>Fútbol</option>
+        </select>
+        <hr>
+
+        <label for="localidad"> Localidad: </label>
+        <input type="text" id="localidad">
+        <hr>
+
+        <input type="submit" value="Buscar">
+    </form> 
+</body>
+</html>
