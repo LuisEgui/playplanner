@@ -9,14 +9,14 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>es.ucm.fdi.iw</groupId>
-	<artifactId>plantilla</artifactId>                      <!-- cambia esto -->
-	<version>0.0.1-SNAPSHOT</version>     
-	<name>plantilla</name>                                  <!-- cambia esto -->
+	<artifactId>playplanner</artifactId>                      <!-- cambia esto -->
+	<version>0.0.1-SNAPSHOT</version>
+	<name>playplanner</name>                                  <!-- cambia esto -->
 	<description>Demo project for Spring Boot</description> <!-- cambia esto -->
 	<properties>
 		<java.version>11</java.version>
 		<maven.compiler.version>3.8.1</maven.compiler.version>
-        <maven.surefire.version>2.22.2</maven.surefire.version>        
+        <maven.surefire.version>2.22.2</maven.surefire.version>
         <karate.version>1.1.0</karate.version>
 	</properties>
 	<dependencies>
@@ -118,7 +118,7 @@
 				<configuration>
 					<argLine>-Dfile.encoding=UTF-8</argLine>
 				</configuration>
-			</plugin>          
+			</plugin>
 		</plugins>
 	</build>
 
