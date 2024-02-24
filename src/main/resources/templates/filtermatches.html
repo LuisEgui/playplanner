@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html class="h-100" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <th:block th:replace="fragments/head :: header" />
+    <title>IW: Filtrar partidos</title>
+</head>
+
+<body class="d-flex flex-column h-100">
+    <header th:replace="fragments/nav.html :: nav"></header>
+
+    <main class="flex-shrink-0">
+        <div class="container">
+            <h1> Busca partidos que te interesen! </h1>
+            <hr>
+    
+            <form>
+                <label for="fecha"> Fecha: </label>
+                <input type="date" id="fecha">
+                <hr>
+
+                <label for="hora-inicio"> Disponibilidad desde </label>
+                <input type="time" id="hora-inicio">
+                <label for="hora-fin">  hasta </label>
+                <input type="time" id="hora-fin">
+                <hr>
+
+                <label for="deporte"> Deporte: </label>
+                <select id="deporte">
+                    <option>Baloncesto</option>
+                    <option>Fútbol</option>
+                </select>
+                <hr>
+
+                <label for="localidad"> Localidad: </label>
+                <input type="text" id="localidad">
+                <hr>
+
+                <input class="btn btn-outline-dark" type="submit" value="Buscar">
+            </form>
+        </div>
+    </main>
+
+    <th:block th:replace="fragments/footer.html :: footer" />
+</body>
+
+</html>
