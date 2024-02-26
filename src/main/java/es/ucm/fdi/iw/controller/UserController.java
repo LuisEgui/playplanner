@@ -307,4 +307,19 @@ public class UserController {
 		messagingTemplate.convertAndSend("/user/"+u.getUsername()+"/queue/updates", json);
 		return "{\"result\": \"message sent.\"}";
 	}	
+
+
+	@GetMapping("/filtermatches")
+	public String filter(Model model) {
+		return "filtermatches";
+	}
+
+	/*
+	 * Localizado en /chatPartido solo para el prototipo, en realidad la anotacion debería ser 
+	 * @GetMapping("{idPartido}/chat")
+	 */
+	@GetMapping("/chatPartido")
+	public String chatMatch(Model model) {
+		return "chatMatch";
+	}
 }
