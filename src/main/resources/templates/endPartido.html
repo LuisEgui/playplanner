@@ -1,11 +1,12 @@
-<!DOCTYPE html>
-<html lang="es">
+<html class="h-100" xmlns:th="http://www.thymeleaf.org">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Partida de Baloncesto</title>
-    <link rel="stylesheet" href="c.css">
+    <th:block th:replace="fragments/head :: header" />
+    <title>IW: Fin Partida</title>
+
+    <link rel="stylesheet" th:href="@{/css/c.css}"> 
 </head>
+
 <body>
     <div class="container">
         <h1>Partida de Baloncesto</h1>
@@ -21,7 +22,7 @@
 
         <div class="jugador-container">
             <div class="imagen-container">
-                <img src="images/carita1.png" alt="Jugador 1" class="jugador">
+                <img th:src="@{/img/carita1.png}" alt="Jugador 1" class="jugador">
             </div>
             <p>LeBron James</p>
         </div>
