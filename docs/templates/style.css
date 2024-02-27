@@ -65,11 +65,112 @@
     margin-bottom: 15px;
   }
 
+  body {
+    font-family: 'Montserrat', sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', sans-serif;
+}
+
   .reserva {
     border: 1px solid #ccc;
     padding: 10px;
     margin-bottom: 10px;
   }
+
+  /* Estilos para los filtros */
+#filtro {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.filtro {
+  padding: 8px 12px;
+  border: 1px solid #f0f0f0;
+  border-radius: 5px;
+  font-size: 16px;
+  background-color: #f0f0f0;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.filtro:focus {
+  outline: none;
+  box-shadow: 0 0 5px #007bff;
+}
+
+.filtro:hover {
+  border-color: #007bff;
+}
+
+.boton {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.boton:hover {
+  background-color: #0056b3;
+}
+
+.boton:focus {
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.reserva {
+  padding: 20px;
+  border-radius: 5px;
+  background-color: #f0f0f0;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.reserva:hover {
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
+
+.reserva h2 {
+  margin-top: 0;
+  font-size: 24px;
+  color: #333;
+}
+
+.info {
+  display: flex;
+  align-items: center;
+}
+
+.info p, .info .precio {
+  margin: 0;
+  font-size: 16px;
+}
+
+.info .precio {
+  background-color: #00aaff;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 5px;
+  margin-left: 10px;
+  font-weight: bold;
+}
+
+.seccion p {
+  color: #666;
+}
+
+.jugador {
+  display: inline-block;
+   margin-right: 10px
+}
 
   .btn {
     display: flex;

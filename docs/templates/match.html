@@ -1,85 +1,88 @@
 <!DOCTYPE html>
-<html>
-  <head>
+<html lang="es">
+<head>
     <meta charset="UTF-8">
-  </head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <title>Partidos</title>
+</head>
+<body>
 
-  <body>
+<header>
+    <h1>Partidos</h1>
+    <div id="filtro">
+        <select class="filtro">
+            <option>Pádel</option>
+            <option>Baloncesto</option>
+            <option>Fútbol Sala</option>
+        </select>
+    </div>
+</header>
 
-    <header>
-        <h1>Partidos</h1>
+<main>
+    <h2>Para tu nivel</h2>
 
-        <div id="filtros">
-            <select>
-                <option>Pádel</option>
-                <option>Baloncesto</option>
-                <option>Fútbol Sala</option>
-            </select>
-        </div>
-    </header>
-
-    <main>
-        <h2>Para tu nivel</h2>
-
-        <section class="reserva">
+    <section class="reserva">
+        <div class="horario">
             <p>Mañana | 18:00</p>
+        </div>
 
-            <div class="jugadores">
-                <div style="display: inline-block; margin-right: 10px;">
-                    <button>+</button>
-                    <p>Libre</p>
-                </div>
-                <div style="display: inline-block; margin-right: 10px;">
-                    <button>+</button>
-                    <p>Libre</p>
-                </div>
-                <div style="display: inline-block; margin-right: 10px;">
-                    <button>+</button>
-                    <p>Libre</p>
-                </div>
-                <div style="display: inline-block; margin-right: 10px;">
-                    <button>+</button>
-                    <p>Libre</p>
-                </div>
+        <div class="jugadores">
+            <div class="jugador">
+                <button class="boton">+</button>
+                <p>Libre</p>
             </div>
-
-            <div id="resumen">
-                <p>Precio por hora: $1,000</p>
-                <p>Nivel de juego: Intermedio</p>
+            <div class="jugador">
+                <button class="boton">+</button>
+                <p>Libre</p>
             </div>
-        </section>
+            <div class="jugador">
+                <button class="boton">+</button>
+                <p>Libre</p>
+            </div>
+            <div class="jugador">
+                <button class="boton">+</button>
+                <p>Libre</p>
+            </div>
+        </div>
 
-        <section class="reserva">
+        <div class="info">
+            <p>Nivel: Intermedio</p>
+            <div class="precio">Precio: $100</div>
+        </div>
+    </section>
+
+    <section class="reserva">
+        <div class="horario">
             <p>Mañana | 20:30</p>
+        </div>
 
-            <div class="jugadores">
-                <div style="display: inline-block; margin-right: 10px;">
-                    <button>+</button>
-                    <p>Libre</p>
-                </div>
-                <div style="display: inline-block; margin-right: 10px;">
-                    <button>+</button>
-                    <p>Libre</p>
-                </div>
-                <div style="display: inline-block; margin-right: 10px;">
-                    <button>+</button>
-                    <p>Libre</p>
-                </div>
-                <div style="display: inline-block; margin-right: 10px;">
-                    <button>+</button>
-                    <p>Libre</p>
-                </div>
+        <div class="jugadores">
+            <div class="jugador">
+                <button class="boton">+</button>
+                <p>Libre</p>
             </div>
+            <div class="jugador">
+                <button class="boton">+</button>
+                <p>Libre</p>
+            </div>
+            <div class="jugador">
+                <button class="boton">+</button>
+                <p>Libre</p>
+            </div>
+            <div class="jugador">
+                <button class="boton">+</button>
+                <p>Libre</p>
+            </div>
+        </div>
 
-            <div style="display:flex; align-items:center;">
-                <p>Nivel: Intermedio</p>
+        <div class="info">
+            <p>Nivel: Intermedio</p>
+            <div class="precio">Precio: $100</div>
+        </div>
+    </section>
+</main>
 
-                <div style="background-color: blue; color:white; padding: 5px; margin-left: 10px;">
-                  <p>Precio: $1.000</p>
-                </div>
-
-              </div>
-        </section>
-    </main>
-  </body>
+</body>
 </html>
