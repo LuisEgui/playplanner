@@ -8,6 +8,7 @@
 </head>
 
 <body>
+    <header th:replace="fragments/nav.html :: nav"></header>
     <div class="container">
         <h1>Partida de Baloncesto</h1>
         <!-- Caritas de los jugadores -->
@@ -28,19 +29,19 @@
         </div>
         <div class="jugador-container">
             <div class="imagen-container">
-                <img src="images/carita2.png" alt="Jugador 2" class="jugador">
+                <img th:src="@{/img/carita2.png}" alt="Jugador 2" class="jugador">
             </div>
             <p>Stephen Curry</p>
         </div>
         <div class="jugador-container">
             <div class="imagen-container">
-                <img src="images/carita3.png" alt="Jugador 3" class="jugador">
+                <img th:src="@{/img/carita3.png}" alt="Jugador 3" class="jugador">
             </div>
             <p>Kevin Durant</p>
         </div>
         <div class="jugador-container">
             <div class="imagen-container">
-                <img src="images/carita4.png" alt="Jugador 4" class="jugador">
+                <img th:src="@{/img/carita4.png}" alt="Jugador 4" class="jugador">
             </div>
             <p>G. Antetokounmpo</p>
         </div>
@@ -49,7 +50,7 @@
         <p>Duración del partido: 2 horas</p>
         <div class="cancha-container">
             <!-- Imagen de la cancha -->
-            <img src="images/cancha.jpg" alt="Cancha de Baloncesto" class="cancha-img">
+            <img th:src="@{/img/cancha.png}" alt="Cancha de Baloncesto" class="cancha-img">
             <p class="cancha-text">Polideportivo Pozuelo</p>
         </div>
         <p>Número de cancha: 5</p>
@@ -59,16 +60,22 @@
         <div class = "container2">
             <div class ="buttons">
                 <!-- Botón de salir -->
-                <a href="index.html" class="btn btn-home">Home</a>
+                <a class="btn btn-home" th:href="@{/user/index.html}">
+                    <span>Home</span>
+                </a>
                  <!-- Botón de reservar nueva cancha -->
-                <a href="search_court.html" class="btn btn-reserv">Reservar Nueva Cancha</a>
+                <a class="btn btn-reserv" th:href="@{/user/filtermatches.html}">
+                 <span>Reservar Nueva Cancha</span>
+                </a>
                 <!-- Botón de valoración -->
-                <a href="valoraciones.html" class="btn btn-val">Valoración</a>
+                <a class="btn btn-val" th:href="@{/user/valuation.html}">
+                    <span>Valoración</span>
+                </a>
                 <!-- Botón de reportar -->
                 <a href="reportar.html" class="btn btn-report">Reportar</a>
             </div>
-        </div>
-        
+        </div>        
+
 
     <!--
         <button  href="index.html" class="btn-home">Home</button>

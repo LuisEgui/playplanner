@@ -328,9 +328,19 @@ public class UserController {
 	 *  Localizado en /endPartida solo para el prototipo, en realidad la anotacion debería ser 
 	 * @GetMapping("{idPartido}/end")
 	 */
-	@GetMapping("/endPartido")
-	public String endPartido(Model model) {
+	@GetMapping("/endMatch")
+	public String endMatch(Model model) {
 		return "endMatch";
 	}
-	
+
+
+	/*
+	 * valoraciones
+	 */
+	@GetMapping("/valuation")
+	public String valuation(Model model) {
+		return "valuation";
+	}
+
+
 }
