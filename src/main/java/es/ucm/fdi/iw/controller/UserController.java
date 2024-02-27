@@ -322,4 +322,15 @@ public class UserController {
 	public String chatMatch(Model model) {
 		return "chatMatch";
 	}
+
+
+	/*
+	 *  Localizado en /endPartida solo para el prototipo, en realidad la anotacion debería ser 
+	 * @GetMapping("{idPartido}/end")
+	 */
+	@GetMapping("/endPartido")
+	public String endPartido(Model model) {
+		return "endMatch";
+	}
+	
 }

@@ -1,0 +1,83 @@
+<html class="h-100" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <th:block th:replace="fragments/head :: header" />
+    <title>IW: Fin Partida</title>
+
+    <link rel="stylesheet" th:href="@{/css/c.css}"> 
+</head>
+
+<body>
+    <div class="container">
+        <h1>Partida de Baloncesto</h1>
+        <!-- Caritas de los jugadores -->
+        <!--<div class="jugador-container">
+            <img src="carita1.png" alt="Jugador 1" class ="jugador">
+            <span>LeBron James</span>
+        </div>
+        <div class = "jugador-container">
+            <img src="carita2.png" alt="Jugador 2" class ="jugador">
+            <span>Stephen Curry</span>
+        </div>-->
+
+        <div class="jugador-container">
+            <div class="imagen-container">
+                <img th:src="@{/img/carita1.png}" alt="Jugador 1" class="jugador">
+            </div>
+            <p>LeBron James</p>
+        </div>
+        <div class="jugador-container">
+            <div class="imagen-container">
+                <img src="images/carita2.png" alt="Jugador 2" class="jugador">
+            </div>
+            <p>Stephen Curry</p>
+        </div>
+        <div class="jugador-container">
+            <div class="imagen-container">
+                <img src="images/carita3.png" alt="Jugador 3" class="jugador">
+            </div>
+            <p>Kevin Durant</p>
+        </div>
+        <div class="jugador-container">
+            <div class="imagen-container">
+                <img src="images/carita4.png" alt="Jugador 4" class="jugador">
+            </div>
+            <p>G. Antetokounmpo</p>
+        </div>
+
+        <!-- Duración del partido -->
+        <p>Duración del partido: 2 horas</p>
+        <div class="cancha-container">
+            <!-- Imagen de la cancha -->
+            <img src="images/cancha.jpg" alt="Cancha de Baloncesto" class="cancha-img">
+            <p class="cancha-text">Polideportivo Pozuelo</p>
+        </div>
+        <p>Número de cancha: 5</p>
+        <!-- Horas jugadas -->
+        <p>Horas jugadas: (2 horas) 18:00 - 20:00</p>
+
+        <div class = "container2">
+            <div class ="buttons">
+                <!-- Botón de salir -->
+                <a href="index.html" class="btn btn-home">Home</a>
+                 <!-- Botón de reservar nueva cancha -->
+                <a href="search_court.html" class="btn btn-reserv">Reservar Nueva Cancha</a>
+                <!-- Botón de valoración -->
+                <a href="valoraciones.html" class="btn btn-val">Valoración</a>
+                <!-- Botón de reportar -->
+                <a href="reportar.html" class="btn btn-report">Reportar</a>
+            </div>
+        </div>
+        
+
+    <!--
+        <button  href="index.html" class="btn-home">Home</button>
+       
+        <button class="btn">Reservar Nueva Cancha</button>
+        
+        <button class="btn-valoracion">Valoración</button>
+        
+        <button class="btn-report">Reportar</button>
+    </div>-->
+</body>
+</html>

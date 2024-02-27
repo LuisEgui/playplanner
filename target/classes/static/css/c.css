@@ -1,0 +1,156 @@
+/* Estilos CSS para la presentación */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-image: url('images/fondo.jpeg');
+    background-size: cover; /* Para cubrir todo el fondo */
+    background-position: center 0px; /* Para centrar la imagen */
+    background-repeat: no-repeat; /* Para que no se repita */
+}
+
+
+.container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: #e6f0ff;
+    text-align: center; /* Centra los botones */
+}
+
+/* Estilos para la imagen "carita1" */
+img.jugador {
+    width: 100px; /* Define el ancho deseado */
+    border: 2px solid black; /* Aplica un borde negro de 2px alrededor de la imagen */
+    border-radius: 5px; /* Agrega bordes redondeados */
+}
+
+/* Estilos para los contenedores de los jugadores */
+.jugador-container {
+    text-align: center; /* Centra el contenido horizontalmente */
+    display: inline-block; /* Permite que los contenedores se muestren uno al lado del otro */
+    width: 150px; /* Ancho máximo para cada contenedor */
+    margin-right: 20px; /* Espacio entre los contenedores */
+}
+
+/* Estilos para las imágenes de los jugadores */
+.imagen-container {
+    display: block; /* Permite que la imagen se muestre como un bloque */
+}
+/* Estilos para los nombres de los jugadores */
+.jugador-container p {
+    margin: 0; /* Espacio entre la imagen y el nombre */
+}
+
+/* Estilos para el contenedor de la cancha */
+.cancha-container {
+    text-align: center; /* Centra el contenido horizontalmente */
+}
+
+/* Estilos para la imagen de la cancha */
+.cancha-img {
+    width: 300px; /* Tamaño mediano */
+    display: block; /* Permite que la imagen se muestre como un bloque */
+    margin: 0 auto; /* Centra la imagen horizontalmente */
+}
+
+/* Estilos para el texto de la cancha */
+.cancha-text {
+    margin-top: 10px; /* Espacio entre la imagen y el texto */
+    font-size: 18px; /* Tamaño de fuente mediano */
+    font-weight: bold; /* Texto en negrita */
+}
+
+
+.container2{
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    text-align: center; /* Centra los botones */
+    display: flex; /* Convierte el contenedor en un contenedor flexible */
+    justify-content: center; /* Alinea los elementos hijos horizontalmente en el centro */
+}
+
+.buttons {
+    display: flex; /* Convierte el contenedor en un contenedor flexible */
+}
+
+.btn {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;    /* Color de texto blanco */
+    border: none;   /* Sin borde */
+    border-radius: 5px; /* Bordes redondeados */
+    cursor: pointer;
+    text-decoration: none;
+    margin-right: 10px; /* Espacio entre los contenedores */
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+
+.btn-home{
+    /* Estilos específicos para el botón "Home" */
+    background-color: #00aaff; /* Color de fondo azul */
+    padding: 10px 20px; /* Espaciado interno */
+    position: absolute; /* Establece la posición absoluta */
+    top: 10px; /* Distancia desde la parte superior de la pantalla */
+    left: 10px; /* Distancia desde el lado izquierdo de la pantalla */
+}
+
+.btn-val{
+    padding: 10px 20px; /* Espaciado interno */
+    margin-right: 10px;
+}
+
+.btn-val:hover {
+    transform: scale(1.3); /* Hace el botón más pequeño al pasar el mouse sobre él */
+    background-color: #00fc22;
+}
+
+.btn-report{
+    padding: 10px 20px; /* Espaciado interno */
+}
+
+.btn-report:hover {
+    transform: scale(0.8); /* Hace el botón más pequeño al pasar el mouse sobre él */
+    background-color: #e00d0d;
+}
+
+/*Css del Vlaoraciones*/
+
+.containerVal {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: #e6f0ff;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.containerVal1{
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    display: inline-block; /* Permite que los contenedores se muestren uno al lado del otro */
+
+}
+
+.containerVal2{
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    
+    display: flex; /* Convierte el contenedor en un contenedor flexible */
+    justify-content: center; /* Alinea los elementos hijos horizontalmente en el centro */
+    width: 150px; /* Ancho máximo para cada contenedor */
+    margin-right: 20px; /* Espacio entre los contenedores */
+}

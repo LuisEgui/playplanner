@@ -1,0 +1,102 @@
+.container-user{
+    margin: 10px;
+}
+
+.profile{
+    display: flex;
+    align-items: center;
+}
+
+.profile img{
+    width: 80px;
+    height: 80px;
+    background-size: cover;
+    border-radius: 50%;
+    margin-right: 20px;
+}
+
+.profile h1{
+    margin: 0;
+    font-size: 25px;
+}
+
+.info button {
+    background-color: rgb(1, 136, 181); /* Color del botón */
+    border-radius: 10%; /* Hace que el botón sea redondo */
+    color: white; /* Color del texto del botón */
+    border: none; /* Elimina el borde del botón */
+    padding: 5px 10px; /* Ajusta el relleno del botón según necesites */
+}
+
+.info button:hover {
+    background-color: rgb(151, 192, 235); /* Cambia el color del botón cuando el ratón está encima */
+}
+
+.sport-btn{
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.nivel h1{
+    font-size: 20px;
+}
+
+.nivel h2{
+    font-size: 15px;
+    text-align: center;
+}
+
+.card-user{
+    display: flex;
+    width: 400px;
+    height: 150px;
+    box-shadow: 0 8px 10px rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    border-radius: 5px;
+    justify-content: center; 
+    align-items: center;
+}
+  
+.card-user table{
+    border: 2px solid black;
+    width: 100%;
+}
+
+.card-user th , td{
+    border: 2px solid black;
+    text-align: left;
+}
+
+.card-user td{
+    border: 2px solid black;
+    text-align: left;
+}
+
+.carousel-inner {
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    height: 200px;
+}
+
+.carousel-inner {
+    width: 80%; 
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color:  rgb(1, 136, 181);  /* Color de las flechas */
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+    background-color: transparent; /* Fondo transparente para los botones */
+}
+
+.carousel-control-prev {
+    margin-left: 10px; /* Mover el botón de navegación anterior hacia la izquierda, más px == más cerca foto | menos px = más alejado foto */
+}
+
+.carousel-control-next {
+    margin-right: 10px; /* Mover el botón de navegación siguiente hacia la derecha, más px == más cerca foto | menos px = más alejado foto*/
+}
