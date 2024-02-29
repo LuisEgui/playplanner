@@ -167,9 +167,30 @@ h1, h2, h3, h4, h5, h6 {
   color: #666;
 }
 
-.jugador {
+.jugador, .amigo{
   display: inline-block;
    margin-right: 10px
+}
+
+.ventanaFlotante {
+  display: flex;
+  background-color: #d01b1b;
+  color: #7b1d1d;
+  padding: 0px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+  z-index: 999;
+}
+
+.ventanaFlotante h3 {
+  margin-top: 0;
+}
+
+.fondoOscuro {
+  display: none;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 998;
 }
 
   .btn {
