@@ -322,4 +322,17 @@ public class UserController {
 	public String chatMatch(Model model) {
 		return "chatMatch";
 	}
+
+	@GetMapping("/endMatch")
+	public String endMatch(Model model) {
+		return "endMatch";
+	}
+
+	/*
+	 * valoraciones
+	 */
+	@GetMapping("/valuation")
+	public String valuation(Model model) {
+		return "valuation";
+	}
 }
