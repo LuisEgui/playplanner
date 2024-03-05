@@ -14,9 +14,9 @@
     <h1>Partidos</h1>
     <div id="filtro">
         <select class="filtro">
-            <option>Pádel</option>
-            <option>Baloncesto</option>
-            <option>Fútbol Sala</option>
+            <option id="padel">Pádel</option>
+            <option id="baloncesto">Baloncesto</option>
+            <option id="futbol">Fútbol Sala</option>
         </select>
     </div>
 </header>
@@ -35,19 +35,19 @@
 
         <div class="jugadores">
             <div class="jugador">
-                <button class="boton" onclick="abrirVentana()">+</button>
+                <button class="boton" onclick="abrirVentana(this)">+</button>
                 <p>Libre</p>
             </div>
             <div class="jugador">
-                <button class="boton" onclick="">+</button>
+                <button class="boton" onclick="abrirVentana(this)">+</button>
                 <p>Libre</p>
             </div>
             <div class="jugador">
-                <button class="boton">+</button>
+                <button class="boton" onclick="abrirVentana(this)">+</button>
                 <p>Libre</p>
             </div>
             <div class="jugador">
-                <button class="boton">+</button>
+                <button class="boton" onclick="abrirVentana(this)">+</button>
                 <p>Libre</p>
             </div>
         </div>

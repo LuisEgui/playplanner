@@ -1,7 +1,9 @@
-function abrirVentana(){
+function abrirVentana(partidoSeleccionado){
+    const seccionReserva = partidoSeleccionado.closest('.reserva');
+
     document.getElementById('ventanaFlotante').style.display = 'block';
     document.getElementById('fondoOscuro').style.display = 'block';
-    ajustarPosicion();
+    ajustarPosicion(seccionReserva);
 }
 
 function cerrarVentana() {
@@ -9,13 +11,21 @@ function cerrarVentana() {
     document.getElementById('fondoOscuro').style.display = 'none';
 }
 
-function ajustarPosicion() {
+function ajustarPosicion(seccionReserva) {
     var ventanaFlotante = document.getElementById('ventanaFlotante');
-    var reservaAnt = document.getElementById('reserva1');
-    var reserva = document.getElementById('reserva2');
+    var partidosDebajo = document.querySelectorAll('.reserva');
 
-    reserva.style.marginTop = reserva.offsetHeight + 'px';
-    ventanaFlotante.style.marginTop = reservaAnt.offsetHeight + 'px';
+    var distanciaDesdeArriba = seccionReserva.offsetTop + seccionReserva.offsetHeight;
+
+    // Desplazar los partidos debajo
+    var desplazamiento = seccionReserva.offsetHeight;
+
+    ventanaFlotante.style.top = distanciaDesdeArriba + 'px';
+
+    partidosDebajo.forEach(function(partido) {
+        if(partido = seccionReserva.nextElementSibling)
+            partido.style.marginTop = desplazamiento + 'px';
+    });
 }
 
 function agregarReservas() {
@@ -29,4 +39,11 @@ document.addEventListener('DOMContentLoaded', function() {
     for (var i = 0; i < reservas - 1; i++) {
         agregarReservas();
     }
+
+    var partidos = document.querySelectorAll('.partido');
+    partidos.forEach(function(partido) {
+        partido.addEventListener('click', function() {
+            abrirVentana(partido); // Llama a la función para abrir la ventana flotante con el partido seleccionado
+        });
+    });
 });

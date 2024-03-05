@@ -108,9 +108,9 @@ h1, h2, h3, h4, h5, h6 {
 
 .boton {
   padding: 8px 16px;
-  border: none;
-  border-radius: 5px;
-  background-color: #007bff;
+  border-radius: 50%;
+  border: 1px solid #909090;
+  background-color: #dcdcdc;
   color: #fff;
   font-size: 16px;
   cursor: pointer;
@@ -155,7 +155,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .info .precio {
-  background-color: #00aaff;
+  background-color: #0056b3;
   color: #fff;
   padding: 8px 12px;
   border-radius: 5px;
@@ -191,6 +191,11 @@ h1, h2, h3, h4, h5, h6 {
   display: none;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 998;
+}
+
+input[type="text"]::placeholder {
+  text-align: center;
+  font-family: 'Montserrat', sans-serif;
 }
 
   .btn {
