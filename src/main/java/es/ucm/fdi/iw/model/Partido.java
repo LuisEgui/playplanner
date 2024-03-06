@@ -7,13 +7,19 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 @Entity
 @Data
-public class Rating {
+public class Partido {
+    public enum Estado {
+        PREPARANDO,
+        CERRADO,   
+        TERMINADO
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gen")
@@ -21,14 +27,17 @@ public class Rating {
 	private long id;
 
     @ManyToOne
-    private User emisor;
-    @ManyToOne
-    private User receptor;
-    
-    @ManyToOne
-    private Juega juega;
+    private Court pista;
 
-    @Column(nullable = false)
-    private int valoracion;
+    @OneToMany
+    @JoinColumn(name = "juega_id")
+    private List<Juega> juega;
 
+    private LocalDateTime inicio;
+    private LocalDateTime fin;
+
+    @Column(nullable = true)
+    private String result;
+
+    private boolean isPrivate;
 }

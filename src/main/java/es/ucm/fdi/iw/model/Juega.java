@@ -7,35 +7,26 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 @Entity
 @Data
-@Table(name = "IWMatch")
-public class Match {
-    public enum Estado {
-        PREPARANDO,
-        CERRADO,   
-        TERMINADO
-    }
-
+@Table(name = "IWJuega")
+public class Juega {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gen")
     @SequenceGenerator(name = "gen", sequenceName = "gen")
 	private long id;
 
-    /*@OneToMany
-    private Court pista;*/
+    @ManyToOne
+    private Partido partido;
 
-    private Timestamp start;
-    private Timestamp end;
+    @ManyToOne
+    private User user;
 
-    @Column(nullable = true)
-    private String result;
-
-    @Column(nullable = false)
-    private boolean isPrivate;
+    @OneToMany
+    @JoinColumn(name = "rating_id")
+    private List<Rating> ratings = new ArrayList<>();
 }
