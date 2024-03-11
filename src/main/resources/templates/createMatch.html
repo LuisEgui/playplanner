@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html class="h-100" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <th:block th:replace="fragments/head :: header" />
+    <title>IW: Crear partido</title>
+</head>
+
+<body class="d-flex flex-column h-100">
+    <header th:replace="fragments/nav.html :: nav"></header>
+
+    <main class="flex-shrink-0">
+        <div class="container">
+            <h1> Crear un partido </h1>
+            <hr>
+    
+            <form method="POST" th:action="@{/user/crearPartido}">
+
+                <label for="inicio"> Hora inicio </label>
+                <input type="datetime-local" name="inicio" id="inicio" required>
+                <label for="fin">  Hora fin </label>
+                <input type="datetime-local" name="fin" id="fin" required>
+                <hr>
+
+                <label for="pista">Pista: </label>
+                <input type="text" name="pista" id="pista" required>
+                <hr>
+
+                <input class="btn btn-outline-dark" type="submit" value="Crear" id="crear">
+            </th:form>
+        </div>
+    </main>
+
+    <th:block th:replace="fragments/footer.html :: footer" />
+</body>
+
+</html>

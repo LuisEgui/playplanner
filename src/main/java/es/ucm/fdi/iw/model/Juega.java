@@ -29,4 +29,8 @@ public class Juega {
     @OneToMany
     @JoinColumn(name = "rating_id")
     private List<Rating> ratings = new ArrayList<>();
+
+    public Juega() {
+        this.ratings = new ArrayList<Rating>();
+    }
 }
