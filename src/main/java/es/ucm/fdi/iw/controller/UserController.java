@@ -5,6 +5,9 @@ import es.ucm.fdi.iw.model.Message;
 import es.ucm.fdi.iw.model.Transferable;
 import es.ucm.fdi.iw.model.User;
 import es.ucm.fdi.iw.model.User.Role;
+import es.ucm.fdi.iw.model.Court;
+import es.ucm.fdi.iw.model.Partido;
+import es.ucm.fdi.iw.model.Juega;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -334,5 +337,41 @@ public class UserController {
 	@GetMapping("/valuation")
 	public String valuation(Model model) {
 		return "valuation";
+	}
+
+	@GetMapping("/crearPartido")
+	public String crearPartido(Model model) {
+		return "createMatch";
+	}
+
+	@PostMapping("/crearPartido")
+	@Transactional
+	public String crearPartido(HttpServletResponse response,
+	@RequestParam("pista") Long idPista,
+	@RequestParam("inicio") String inicio,
+	@RequestParam("fin") String fin,
+	Model model, HttpSession session) throws IOException{
+
+        User requester = (User)session.getAttribute("u");
+        Court pista = entityManager.find(Court.class, idPista);
+		if(pista == null) throw new IllegalArgumentException("La pista no existe");
+
+		//TODO Comprobar que el horario especificado es valido
+		
+		//Crear partido
+		Partido partido = new Partido();
+		partido.setPista(pista);
+		partido.setInicio(LocalDateTime.parse(inicio));
+		partido.setFin(LocalDateTime.parse(fin));
+		partido.setPrivate(false);
+		entityManager.persist(partido);
+		
+		//El creador juega en el partido
+		Juega juega = new Juega();
+		juega.setPartido(partido);
+		juega.setUser(requester);
+		entityManager.persist(juega);
+
+		return "chatMatch";
 	}
 }

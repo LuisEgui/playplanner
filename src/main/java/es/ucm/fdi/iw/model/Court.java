@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+
 @Entity
 @Data
 @Table(name="IWCourt")
@@ -27,7 +28,9 @@ public class Court {
     private String nombre;
     private String tipo;
     private String localizacion;
-    private LocalDateTime horarios;
+    //Cambiado a String temporalmente
+    private String apertura;
+    private String cierre;
 
     @OneToMany
     @JoinColumn(name = "partido_id")

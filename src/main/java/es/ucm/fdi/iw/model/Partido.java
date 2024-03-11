@@ -15,6 +15,7 @@ import java.util.List;
 @Entity
 @Data
 public class Partido {
+    
     public enum Estado {
         PREPARANDO,
         CERRADO,   
@@ -40,4 +41,8 @@ public class Partido {
     private String result;
 
     private boolean isPrivate;
+
+    public Partido() {
+        this.juega = new ArrayList<Juega>();
+    }
 }
