@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html class="h-100" xmlns:th="http://www.thymeleaf.org">
 
@@ -14,7 +15,7 @@
             <h1> Busca partidos que te interesen! </h1>
             <hr>
     
-            <form>
+            <form class="form-filter">
                 <label for="fecha"> Fecha: </label>
                 <input type="date" id="fecha">
                 <hr>
@@ -36,7 +37,7 @@
                 <input type="text" id="localidad">
                 <hr>
 
-                <input class="btn btn-outline-dark" type="submit" value="Buscar">
+                <input id="buscarPartido" class="btn btn-outline-dark" type="submit" value="Buscar">
             </form>
         </div>
     </main>

@@ -14,3 +14,16 @@ Feature: Caso principal
     * input('#fin', '11/06/002026 11:00 AM')
     * click("input[id=crear]")
     * match html('title') contains 'IW: Chat de partido'
+
+  Scenario: partido
+    #inicia sesion y entra a su perfil
+    Given call read('login.feature@login_b')
+
+    #pulsa el botón de filtrar partido
+    And click("a[id=a-filtrarPartido]")
+    And input('#fecha', '12/03/2024')
+    And input('#hora-inicio', '15:30')
+    And input('#hora-fin', '17:00')
+    And input('#deporte', 'Baloncesto')
+    And input('#localidad', 'Ciu')
+    * click("input[id=buscarPartido]")
