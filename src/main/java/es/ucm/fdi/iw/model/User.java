@@ -66,7 +66,7 @@ public class User implements Transferable<User.Transfer> {
 	private List<Message> received = new ArrayList<>();	
     
     @OneToMany
-    @JoinColumn(name = "juega_id")
+    @JoinColumn(name = "user_id")
     private List<Juega> juega = new ArrayList<>();
 
     /**

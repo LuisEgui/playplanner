@@ -270,7 +270,7 @@ public class UserController {
      * @param o JSON-ized message, similar to {"message": "text goes here"}
      * @throws JsonProcessingException
      */
-    @PostMapping("/{id}/msg")
+    @PostMapping("/match/{id}/msg")
 	@ResponseBody
 	@Transactional
 	public String postMsg(@PathVariable long id, 
@@ -278,14 +278,22 @@ public class UserController {
 		throws JsonProcessingException {
 		
 		String text = o.get("message").asText();
-		User u = entityManager.find(User.class, id);
+		Partido p = entityManager.find(Partido.class, id);
 		User sender = entityManager.find(
 				User.class, ((User)session.getAttribute("u")).getId());
-		model.addAttribute("user", u);
+		//model.addAttribute("partido", p);
 		
+		/*
+		//Comprobar que el emisor pertenece al partido
+		boolean pertenece = false;
+		for(Juega j : sender.getJuega()) {
+			if(j.getUser().getId() == sender.getId()) pertenece = true;
+		}
+		if(!pertenece) throw new IllegalArgumentException("No perteneces al partido");*/
+
 		// construye mensaje, lo guarda en BD
 		Message m = new Message();
-		m.setRecipient(u);
+		m.setPartido(p);
 		m.setSender(sender);
 		m.setDateSent(LocalDateTime.now());
 		m.setText(text);
@@ -307,7 +315,7 @@ public class UserController {
 
 		log.info("Sending a message to {} with contents '{}'", id, json);
 
-		messagingTemplate.convertAndSend("/user/"+u.getUsername()+"/queue/updates", json);
+		messagingTemplate.convertAndSend("/topic/" + p.getChatToken(), json);
 		return "{\"result\": \"message sent.\"}";
 	}	
 
@@ -317,14 +325,12 @@ public class UserController {
 		return "filtermatches";
 	}
 
-	/*
-	 * Localizado en /chatPartido solo para el prototipo, en realidad la anotacion debería ser 
-	 * @GetMapping("{idPartido}/chat")
-	 */
-	@GetMapping("/chatPartido")
-	public String chatMatch(Model model) {
-		return "chatMatch";
-	}
+	@GetMapping("/match/{id}")
+    public String getMatch(@PathVariable long id, Model model, HttpSession session) {
+        Partido p = entityManager.find(Partido.class, id);
+        model.addAttribute("partido", p);
+        return "chatMatch";
+    }
 
 	@GetMapping("/endMatch")
 	public String endMatch(Model model) {
@@ -364,6 +370,7 @@ public class UserController {
 		partido.setInicio(LocalDateTime.parse(inicio));
 		partido.setFin(LocalDateTime.parse(fin));
 		partido.setPrivate(false);
+		partido.setChatToken(generateRandomBase64Token(12));
 		entityManager.persist(partido);
 		
 		//El creador juega en el partido
@@ -372,6 +379,6 @@ public class UserController {
 		juega.setUser(requester);
 		entityManager.persist(juega);
 
-		return "chatMatch";
+		return "admin";
 	}
 }

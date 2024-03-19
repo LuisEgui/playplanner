@@ -42,6 +42,9 @@ public class Message implements Transferable<Message.Transfer> {
 	private User sender;
 	@ManyToOne
 	private User recipient;
+
+	@ManyToOne
+	private Partido partido;
 	private String text;
 	
 	private LocalDateTime dateSent;
@@ -73,7 +76,7 @@ public class Message implements Transferable<Message.Transfer> {
 
 	@Override
 	public Transfer toTransfer() {
-		return new Transfer(sender.getUsername(), recipient.getUsername(), 
+		return new Transfer(sender.getUsername(), Long.toString(partido.getId()), 
 			DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(dateSent),
 			dateRead == null ? null : DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(dateRead),
 			text, id

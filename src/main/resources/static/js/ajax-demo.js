@@ -33,6 +33,7 @@ if (ws.receive) {
     ws.receive = (m) => {
         oldFn(m); // llama al manejador anterior
         messageDiv.insertAdjacentHTML("beforeend", renderMsg(m));
+        console.log("He recibido esto por ws" + m);
     }
 }
 

@@ -34,6 +34,10 @@ public class Partido {
     @JoinColumn(name = "juega_id")
     private List<Juega> juega;
 
+    @OneToMany
+    @JoinColumn(name = "partido_id")
+    private List<Message> mensajes;
+
     private LocalDateTime inicio;
     private LocalDateTime fin;
 
@@ -41,6 +45,8 @@ public class Partido {
     private String result;
 
     private boolean isPrivate;
+
+    private String chatToken;
 
     public Partido() {
         this.juega = new ArrayList<Juega>();

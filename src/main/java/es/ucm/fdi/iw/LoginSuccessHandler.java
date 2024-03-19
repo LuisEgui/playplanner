@@ -1,6 +1,7 @@
 package es.ucm.fdi.iw;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.persistence.EntityManager;
@@ -8,6 +9,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.transaction.Transactional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,6 +19,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
+import es.ucm.fdi.iw.model.Juega;
+import es.ucm.fdi.iw.model.Rating;
 import es.ucm.fdi.iw.model.User;
 import es.ucm.fdi.iw.model.User.Role;
 
@@ -44,6 +48,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
      * Called whenever a user authenticates correctly.
      */
     @Override
+	@Transactional
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 			Authentication authentication) throws IOException, ServletException {
 	   
@@ -89,6 +94,18 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
 		log.info("LOG IN: {} (id {}) -- session is {}, websocket is {} -- redirected to {}",
 			u.getUsername(), u.getId(), session.getId(), ws, nextUrl);
+
+		u = entityManager.find(User.class, u.getId());
+		ArrayList<String> topics = new ArrayList<>();
+		for (Juega j : u.getJuega()) {
+			log.info("\t interesado en {}", j.getPartido().getChatToken());
+			topics.add("/topic/" + j.getPartido().getChatToken());
+		}
+		String intereses = String.join(",", topics);
+
+		log.info("\t => interesado en {}", intereses);
+		session.setAttribute("topics", intereses);
+
 
 		// note that this is a 302, and will result in a new request
 		response.sendRedirect(nextUrl);
