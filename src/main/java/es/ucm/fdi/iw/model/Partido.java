@@ -31,12 +31,12 @@ public class Partido {
     private Court pista;
 
     @OneToMany
-    @JoinColumn(name = "juega_id")
+    @JoinColumn(name = "partido_id")
     private List<Juega> juega;
 
     @OneToMany
     @JoinColumn(name = "partido_id")
-    private List<Message> mensajes;
+    private List<Mensaje> mensajes;
 
     private LocalDateTime inicio;
     private LocalDateTime fin;

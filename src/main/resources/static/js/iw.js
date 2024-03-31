@@ -198,6 +198,21 @@ document.addEventListener("DOMContentLoaded", () => {
     if (config.socketUrl) {
         let subs = config.admin ? ["/topic/admin", "/user/queue/updates"] : ["/user/queue/updates"]
         subs = [... subs, ... config.topics.split(",")]
+
+        /*Si chat_token está definido y /topic/chat_token no esta en subs, nos suscribimos tambien a él.
+        No sirve para nada si quiere acceder un usuario del partido al chat porque ya lo tendrá,
+        pero sí que sirve para que el admin pueda suscribirse temporalmente al chat del partido
+        al que accede, sin tener que quedarse suscrito después de salir del chat.*/
+
+        if(chat_token !== undefined ) {
+            let contains = false;
+            for(let i = 0; i < subs.length; i++) {
+                if(subs[i] === "/topic/".concat(chat_token)) contains = true;
+            }
+            
+            if(!contains) subs = [... subs, "/topic/".concat(chat_token)];
+        }
+       
         ws.initialize(config.socketUrl, subs);
 
         let p = document.querySelector("#nav-unread");

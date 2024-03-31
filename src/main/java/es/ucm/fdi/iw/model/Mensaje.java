@@ -25,14 +25,20 @@ import lombok.AllArgsConstructor;
  */
 @Entity
 @NamedQueries({
-	@NamedQuery(name="Message.countUnread",
-	query="SELECT COUNT(m) FROM Message m "
-			+ "WHERE m.recipient.id = :userId AND m.dateRead = null")
+	@NamedQuery(name="Mensaje.countUnread",
+	query="SELECT COUNT(m) FROM Mensaje m "
+			+ "WHERE m.recipient.id = :userId AND m.dateRead = null"),
+	
+	@NamedQuery(name="Mensaje.reports", 
+	query="SELECT m FROM Mensaje m WHERE m.isReport = TRUE"),
+
+	@NamedQuery(name="Mensaje.noLeidos", 
+	query="SELECT m FROM Mensaje m WHERE m.dateRead = null")
 })
 @Data
-public class Message implements Transferable<Message.Transfer> {
+public class Mensaje implements Transferable<Mensaje.Transfer> {
 	
-	private static Logger log = LogManager.getLogger(Message.class);	
+	private static Logger log = LogManager.getLogger(Mensaje.class);	
 	
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gen")
@@ -45,7 +51,9 @@ public class Message implements Transferable<Message.Transfer> {
 
 	@ManyToOne
 	private Partido partido;
-	private String text;
+	private String texto;
+
+	private boolean isReport;
 	
 	private LocalDateTime dateSent;
 	private LocalDateTime dateRead;
@@ -63,13 +71,13 @@ public class Message implements Transferable<Message.Transfer> {
 		private String received;
 		private String text;
 		long id;
-		public Transfer(Message m) {
+		public Transfer(Mensaje m) {
 			this.from = m.getSender().getUsername();
-			this.to = m.getRecipient().getUsername();
+			this.to = "Partido #".concat(Long.toString(m.getPartido().getId()));
 			this.sent = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(m.getDateSent());
 			this.received = m.getDateRead() == null ?
 					null : DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(m.getDateRead());
-			this.text = m.getText();
+			this.text = m.getTexto();
 			this.id = m.getId();
 		}
 	}
@@ -79,7 +87,7 @@ public class Message implements Transferable<Message.Transfer> {
 		return new Transfer(sender.getUsername(), Long.toString(partido.getId()), 
 			DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(dateSent),
 			dateRead == null ? null : DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(dateRead),
-			text, id
+			texto, id
         );
     }
 }

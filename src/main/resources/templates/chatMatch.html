@@ -18,7 +18,15 @@
             <div id="contenedor-mensajes">
                 <!-- recepción de mensajes -->
                 <div class="py-5 row" id="mensajes">
+                    <tr th:each="mensaje: ${mensajes_chat}">
+                        <div>
+                            <th:block th:text="${mensaje.sender.username}"></th:block>
+                            @<th:block th:text="${mensaje.dateSent}"></th:block> 
+                            <th:block th:text="${mensaje.texto}"></th:block>
+                        </div>
+                    </tr>
                 </div>
+
                 <!-- envío de mensajes -->
                 <div class="py-5 row ">
                     <form th:action="@{/user/match/__${partido.id}__/msg}" method="POST">
@@ -31,19 +39,18 @@
             <hr>
             <h2> Participantes </h2>
             <div>
-                <img src="" alt="Foto del participante">
-                <em> Nombre del participante </em>
-                <hr>
-                <img src="" alt="Foto del participante">
-                <em> Nombre del participante </em>
-                <hr>
-                <img src="" alt="Foto del participante">
-                <em> Nombre del participante </em>
-                <hr>
+                <tr th:each="j: ${partido.juega}">
+                    <span th:text="${j.user.username}"></span>
+                    <hr>
+                </tr>
             </div>
         </div>
     </main>
 
+    <script th:inline="javascript">
+        var chat_token = /*[[__${partido.chatToken}__]]*/ "";
+    </script>
+    
     <th:block th:replace="fragments/footer.html :: footer" />
     <script th:src="@{/js/ajax-subscribe-match.js}"></script>
     <script th:src="@{/js/ajax-demo.js}"></script>

@@ -33,6 +33,10 @@ public class IwUserDetailsService implements UserDetailsService {
 	        User u = entityManager.createNamedQuery("User.byUsername", User.class)
                     .setParameter("username", username)
                     .getSingleResult();
+			
+			//Comprobar que el usuario no ha sido baneado
+			if(!u.isEnabled()) throw new Exception("Usuario baneado");
+
 	        // build UserDetails object
 	        ArrayList<SimpleGrantedAuthority> roles = new ArrayList<>();
 	        for (String r : u.getRoles().split("[,]")) {
