@@ -1,7 +1,7 @@
 package es.ucm.fdi.iw.controller;
 
 import es.ucm.fdi.iw.LocalData;
-import es.ucm.fdi.iw.model.Message;
+import es.ucm.fdi.iw.model.Mensaje;
 import es.ucm.fdi.iw.model.Transferable;
 import es.ucm.fdi.iw.model.User;
 import es.ucm.fdi.iw.model.User.Role;
@@ -43,6 +43,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.*;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
@@ -236,41 +237,58 @@ public class UserController {
 		return "{\"status\":\"photo uploaded correctly\"}";
     }
     
+
     /**
      * Returns JSON with all received messages
-     */
+     
     @GetMapping(path = "received", produces = "application/json")
 	@Transactional // para no recibir resultados inconsistentes
 	@ResponseBody  // para indicar que no devuelve vista, sino un objeto (jsonizado)
-	public List<Message.Transfer> retrieveMessages(HttpSession session) {
+	public List<Mensaje.Transfer> retrieveMessages(HttpSession session) {
 		long userId = ((User)session.getAttribute("u")).getId();		
 		User u = entityManager.find(User.class, userId);
+		List<Mensaje> mensajes = new ArrayList<Mensaje>();
+
+		//Recorrer todos los partidos en los que participa, buscando mensajes no leidos
+		for(Juega j: u.getJuega()) {
+			mensajes.addAll(entityManager.createNamedQuery("Mensaje.noLeidos", Mensaje.class)
+			.setParameter("matchId", j.getPartido().getId()).getResultList());
+		}
+
 		log.info("Generating message list for user {} ({} messages)", 
-				u.getUsername(), u.getReceived().size());
-		return  u.getReceived().stream().map(Transferable::toTransfer).collect(Collectors.toList());
-	}	
+				u.getUsername(), mensajes.size());
+		return  mensajes.stream().map(Transferable::toTransfer).collect(Collectors.toList());
+	}
+	*/
     
     /**
      * Returns JSON with count of unread messages 
-     */
+    
 	@GetMapping(path = "unread", produces = "application/json")
 	@ResponseBody
 	public String checkUnread(HttpSession session) {
 		long userId = ((User)session.getAttribute("u")).getId();		
-		long unread = entityManager.createNamedQuery("Message.countUnread", Long.class)
-			.setParameter("userId", userId)
+		User u = entityManager.find(User.class, userId);
+		long unread = 0;
+
+		//Recorrer todos los partidos en los que participa, buscando mensajes no leidos
+		for(Juega j: u.getJuega()) {
+			unread += entityManager.createNamedQuery("Mensaje.countUnread", Long.class)
+			.setParameter("matchId", j.getPartido().getId())
 			.getSingleResult();
+		}
+		
 		session.setAttribute("unread", unread);
 		return "{\"unread\": " + unread + "}";
-    }
+    }*/
     
     /**
-     * Posts a message to a user.
+     * Posts a message to a match.
      * @param id of target user (source user is from ID)
      * @param o JSON-ized message, similar to {"message": "text goes here"}
      * @throws JsonProcessingException
      */
-    @PostMapping("/{id}/msg")
+    @PostMapping("/match/{id}/msg")
 	@ResponseBody
 	@Transactional
 	public String postMsg(@PathVariable long id, 
@@ -278,17 +296,26 @@ public class UserController {
 		throws JsonProcessingException {
 		
 		String text = o.get("message").asText();
-		User u = entityManager.find(User.class, id);
+		Partido p = entityManager.find(Partido.class, id);
 		User sender = entityManager.find(
 				User.class, ((User)session.getAttribute("u")).getId());
-		model.addAttribute("user", u);
 		
+		
+		//Comprobar que el emisor pertenece al partido o bien es admin
+		boolean pertenece = false;
+		for(Juega j : sender.getJuega()) {
+			if(j.getUser().getId() == sender.getId()) pertenece = true;
+		}
+		if(!pertenece && !sender.hasRole(Role.ADMIN))
+			 throw new IllegalArgumentException("No perteneces al partido y no eres admin");
+
 		// construye mensaje, lo guarda en BD
-		Message m = new Message();
-		m.setRecipient(u);
+		Mensaje m = new Mensaje();
+		m.setPartido(p);
 		m.setSender(sender);
 		m.setDateSent(LocalDateTime.now());
-		m.setText(text);
+		m.setTexto(text);
+		m.setReport(false);
 		entityManager.persist(m);
 		entityManager.flush(); // to get Id before commit
 		
@@ -307,24 +334,36 @@ public class UserController {
 
 		log.info("Sending a message to {} with contents '{}'", id, json);
 
-		messagingTemplate.convertAndSend("/user/"+u.getUsername()+"/queue/updates", json);
+		messagingTemplate.convertAndSend("/topic/" + p.getChatToken(), json);
 		return "{\"result\": \"message sent.\"}";
 	}	
-
 
 	@GetMapping("/filtermatches")
 	public String filter(Model model) {
 		return "filtermatches";
 	}
 
-	/*
-	 * Localizado en /chatPartido solo para el prototipo, en realidad la anotacion debería ser 
-	 * @GetMapping("{idPartido}/chat")
-	 */
-	@GetMapping("/chatPartido")
-	public String chatMatch(Model model) {
-		return "chatMatch";
-	}
+	@GetMapping("/match/{id}")
+	@Transactional
+    public String getMatch(@PathVariable long id, Model model, HttpSession session) {
+        Partido p = entityManager.find(Partido.class, id);
+        model.addAttribute("partido", p);
+
+		List<Mensaje> mensajes = new ArrayList<Mensaje>();
+		//Quedarnos con los mensajes que no son reportes
+		for(Mensaje m: p.getMensajes()) {
+			if(!m.isReport()) mensajes.add(m);
+		}
+		model.addAttribute("mensajes_chat", mensajes);
+
+		//TODO marcar los mensajes como leidos por ese usuario
+
+		/* 1. Ejecutar named query que tome todos los Leido por ese usuario de este chat
+		 * 2. Iterar sobre todos los mensajes del partido y crear un nuevo leido para cada uno nuevo
+		 */
+		
+        return "chatMatch";
+    }
 
 	@GetMapping("/endMatch")
 	public String endMatch(Model model) {
@@ -364,6 +403,7 @@ public class UserController {
 		partido.setInicio(LocalDateTime.parse(inicio));
 		partido.setFin(LocalDateTime.parse(fin));
 		partido.setPrivate(false);
+		partido.setChatToken(generateRandomBase64Token(12));
 		entityManager.persist(partido);
 		
 		//El creador juega en el partido
@@ -372,6 +412,6 @@ public class UserController {
 		juega.setUser(requester);
 		entityManager.persist(juega);
 
-		return "chatMatch";
+		return "admin";
 	}
 }

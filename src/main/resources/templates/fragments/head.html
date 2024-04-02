@@ -14,6 +14,7 @@
             const config = {
                 socketUrl: "[[${session.ws}?:'']]", // empty is false, will result in no WS being opened
                 rootUrl: "[[${session.url}?:'']]",
+                topics: "[[${session.topics}?:'']]",
                 csrf: {
                     name: "[[${_csrf.parameterName}]]",
                     value: "[[${_csrf.token}]]"

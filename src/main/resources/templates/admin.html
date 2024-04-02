@@ -26,18 +26,7 @@
                         </div>
 
                         <div class="modal-body">
-                            <em> Partido #--- </em>
-                            <p> Organizador: --- <p>
-                            <p> Participantes: --- <p>
-                            <p> Otra informacion: --- <p>
-                            <form method="GET"> <input type="submit" value="Ir a la página del partido"></form>
-                            <hr>
-
-                            <em> Partido #--- </em>
-                            <p> Organizador: --- <p>
-                            <p> Participantes: --- <p>
-                            <p> Otra informacion: --- <p>
-                            <form method="GET"> <input type="submit" value="Ir a la página del partido"></form>
+                            
                         </div>
 
                         <div class="modal-footer">
@@ -58,20 +47,18 @@
                             <h3>Reportes</h3>
                         </div>
 
+
                         <div class="modal-body">
-                            <div> 
-                                <em> Reporte de - en partido - </em>
-                                <a href=""> Ir a la página del partido </a> 
-                            </div>
-                            
-                            <p> Contenido del reporte</p>
-                            <form method="POST">
+                            <tr th:each="report: ${reports}">
+                                <h4>Reporte enviado por <td th:text="${report.sender.username}"></td></h4>
+                                <h5>Enviado en partido #<td th:text="${report.partido.id}"></td></h5>
+                                <td th:text="${report.texto}"></td>
+
                                 <div>
-                                    <div><label for="respuesta"> Respuesta (opcional): </label></div>
-                                    <textarea id="respuesta"> </textarea>
+                                    <a class="link" th:href="@{/user/match/{id}(id=${report.partido.id})}"> Ir al chat del partido </a>
                                 </div>
-                                <input type="submit" id="cerrar-incidencia" value="Enviar y cerrar incidencia">
-                            </form>
+                                <hr>
+                            </tr>
                         </div>
 
                         <div class="modal-footer">
@@ -89,21 +76,18 @@
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h3>Partidos que se están organizando</h3>
+                            <h3>Retirar acceso a un usuario</h3>
                         </div>
 
                         <div class="modal-body">
-                            <form method="POST">
+                            <div id="infoBan"></div>
+                            <form method="POST" th:action="@{/admin/banUser}" id="banuser">
                                 <div>
-                                    <div><label for="nombre-usuario"> Nombre de usuario: </label></div>
-                                    <input type="text" id="nombre-usuario" required>
+                                    <div><label for="username"> Nombre de usuario: </label></div>
+                                    <input type="text" id="username" name="username" required>
                                 </div>
                                     
-                                <div>
-                                    <div><label for="comentarios"> Comentarios (opcional): </label></div>
-                                    <textarea id="comentarios"> </textarea>
-                                </div>
-                                <input type="submit" class="btn btn-danger">
+                                <input type="submit" class="btn btn-danger" id="banuser-btn">
                             </form>
                         </div>
 
@@ -118,5 +102,6 @@
     </main>
 
     <th:block th:replace="fragments/footer.html :: footer" />
+    <script th:src="@{/js/admin.js}"></script>
 </body>
 </html>

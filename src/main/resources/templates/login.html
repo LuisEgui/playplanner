@@ -14,7 +14,7 @@
             <form class="form-signin" method="post" th:action="@{/login}">
                 <h2 class="form-signin-heading">Please sign in</h2>
                 <p th:if="${#request.getQueryString() == 'error'}" class="error">
-                    Error en nombre de usuario o contraseña
+                    Error en nombre de usuario o contraseña, o has sido baneado
                 </p>
                 <p>
                     <label for="username" class="visually-hidden">Username</label>
