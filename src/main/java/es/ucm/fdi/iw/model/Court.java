@@ -32,7 +32,12 @@ public class Court {
     private String apertura;
     private String cierre;
 
+    //@OneToMany(mappedBy = "court")
     @OneToMany
     @JoinColumn(name = "partido_id")
     List<Partido> partido = new ArrayList<>();
+
+    public Court() {
+        this.partido = new ArrayList<Partido>();
+    }
 }

@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -74,12 +75,12 @@ public class UserController {
 
     /**
      * Exception to use when denying access to unauthorized users.
-     * 
+     *
      * In general, admins are always authorized, but users cannot modify
      * each other's profiles.
      */
 	@ResponseStatus(
-		value=HttpStatus.FORBIDDEN, 
+		value=HttpStatus.FORBIDDEN,
 		reason="No eres administrador, y éste no es tu perfil")  // 403
 	public static class NoEsTuPerfilException extends RuntimeException {}
 
@@ -89,7 +90,7 @@ public class UserController {
 	 * encodings, since encodings contain a randomly-generated salt.
 	 * @param rawPassword to encode
 	 * @return the encoded password (typically a 60-character string)
-	 * for example, a possible encoding of "test" is 
+	 * for example, a possible encoding of "test" is
 	 * {bcrypt}$2y$12$XCKz0zjXAP6hsFyVc8MucOzx6ER6IsC1qo5zQbclxhddR1t6SfrHm
 	 */
 	public String encodePassword(String rawPassword) {
@@ -125,8 +126,8 @@ public class UserController {
 	@Transactional
 	public String postUser(
 			HttpServletResponse response,
-			@PathVariable long id, 
-			@ModelAttribute User edited, 
+			@PathVariable long id,
+			@ModelAttribute User edited,
 			@RequestParam(required=false) String pass2,
 			Model model, HttpSession session) throws IOException {
 
@@ -141,16 +142,16 @@ public class UserController {
             entityManager.flush(); // forces DB to add user & assign valid id
             id = target.getId();   // retrieve assigned id from DB
         }
-        
+
         // retrieve requested user
         target = entityManager.find(User.class, id);
         model.addAttribute("user", target);
-		
+
 		if (requester.getId() != target.getId() &&
 				! requester.hasRole(Role.ADMIN)) {
 			throw new NoEsTuPerfilException();
 		}
-		
+
 		if (edited.getPassword() != null) {
             if ( ! edited.getPassword().equals(pass2)) {
                 // FIXME: complain
@@ -158,7 +159,7 @@ public class UserController {
                 // save encoded version of password
                 target.setPassword(encodePassword(edited.getPassword()));
             }
-		}		
+		}
 		target.setUsername(edited.getUsername());
 		target.setFirstName(edited.getFirstName());
 		target.setLastName(edited.getLastName());
@@ -169,11 +170,11 @@ public class UserController {
         }
 
 		return "user";
-	}	
+	}
 
     /**
      * Returns the default profile pic
-     * 
+     *
      * @return
      */
     private static InputStream defaultPic() {
@@ -184,7 +185,7 @@ public class UserController {
 
     /**
      * Downloads a profile pic for a user id
-     * 
+     *
      * @param id
      * @return
      * @throws IOException
@@ -199,26 +200,26 @@ public class UserController {
 
     /**
      * Uploads a profile pic for a user id
-     * 
+     *
      * @param id
      * @return
      * @throws IOException
      */
     @PostMapping("{id}/pic")
 	@ResponseBody
-    public String setPic(@RequestParam("photo") MultipartFile photo, @PathVariable long id, 
+    public String setPic(@RequestParam("photo") MultipartFile photo, @PathVariable long id,
         HttpServletResponse response, HttpSession session, Model model) throws IOException {
 
         User target = entityManager.find(User.class, id);
         model.addAttribute("user", target);
-		
+
 		// check permissions
 		User requester = (User)session.getAttribute("u");
 		if (requester.getId() != target.getId() &&
 				! requester.hasRole(Role.ADMIN)) {
             throw new NoEsTuPerfilException();
 		}
-		
+
 		log.info("Updating photo for user {}", id);
 		File f = localData.getFile("user", ""+id+".jpg");
 		if (photo.isEmpty()) {
@@ -236,16 +237,16 @@ public class UserController {
 		}
 		return "{\"status\":\"photo uploaded correctly\"}";
     }
-    
+
 
     /**
      * Returns JSON with all received messages
-     
+
     @GetMapping(path = "received", produces = "application/json")
 	@Transactional // para no recibir resultados inconsistentes
 	@ResponseBody  // para indicar que no devuelve vista, sino un objeto (jsonizado)
 	public List<Mensaje.Transfer> retrieveMessages(HttpSession session) {
-		long userId = ((User)session.getAttribute("u")).getId();		
+		long userId = ((User)session.getAttribute("u")).getId();
 		User u = entityManager.find(User.class, userId);
 		List<Mensaje> mensajes = new ArrayList<Mensaje>();
 
@@ -255,19 +256,19 @@ public class UserController {
 			.setParameter("matchId", j.getPartido().getId()).getResultList());
 		}
 
-		log.info("Generating message list for user {} ({} messages)", 
+		log.info("Generating message list for user {} ({} messages)",
 				u.getUsername(), mensajes.size());
 		return  mensajes.stream().map(Transferable::toTransfer).collect(Collectors.toList());
 	}
 	*/
-    
+
     /**
-     * Returns JSON with count of unread messages 
-    
+     * Returns JSON with count of unread messages
+
 	@GetMapping(path = "unread", produces = "application/json")
 	@ResponseBody
 	public String checkUnread(HttpSession session) {
-		long userId = ((User)session.getAttribute("u")).getId();		
+		long userId = ((User)session.getAttribute("u")).getId();
 		User u = entityManager.find(User.class, userId);
 		long unread = 0;
 
@@ -277,11 +278,11 @@ public class UserController {
 			.setParameter("matchId", j.getPartido().getId())
 			.getSingleResult();
 		}
-		
+
 		session.setAttribute("unread", unread);
 		return "{\"unread\": " + unread + "}";
     }*/
-    
+
     /**
      * Posts a message to a match.
      * @param id of target user (source user is from ID)
@@ -291,16 +292,16 @@ public class UserController {
     @PostMapping("/match/{id}/msg")
 	@ResponseBody
 	@Transactional
-	public String postMsg(@PathVariable long id, 
-			@RequestBody JsonNode o, Model model, HttpSession session) 
+	public String postMsg(@PathVariable long id,
+			@RequestBody JsonNode o, Model model, HttpSession session)
 		throws JsonProcessingException {
-		
+
 		String text = o.get("message").asText();
 		Partido p = entityManager.find(Partido.class, id);
 		User sender = entityManager.find(
 				User.class, ((User)session.getAttribute("u")).getId());
-		
-		
+
+
 		//Comprobar que el emisor pertenece al partido o bien es admin
 		boolean pertenece = false;
 		for(Juega j : sender.getJuega()) {
@@ -318,7 +319,7 @@ public class UserController {
 		m.setReport(false);
 		entityManager.persist(m);
 		entityManager.flush(); // to get Id before commit
-		
+
 		ObjectMapper mapper = new ObjectMapper();
 		/*
 		// construye json: método manual
@@ -336,7 +337,7 @@ public class UserController {
 
 		messagingTemplate.convertAndSend("/topic/" + p.getChatToken(), json);
 		return "{\"result\": \"message sent.\"}";
-	}	
+	}
 
 	@GetMapping("/filtermatches")
 	public String filter(Model model) {
@@ -361,11 +362,11 @@ public class UserController {
 		/* 1. Ejecutar named query que tome todos los Leido por ese usuario de este chat
 		 * 2. Iterar sobre todos los mensajes del partido y crear un nuevo leido para cada uno nuevo
 		 */
-		
+
         return "chatMatch";
     }
 
-	@GetMapping("/endMatch")
+	@RequestMapping(value = "/endMatch", method = {RequestMethod.GET, RequestMethod.POST})
 	public String endMatch(Model model) {
 		return "endMatch";
 	}
@@ -395,23 +396,27 @@ public class UserController {
         Court pista = entityManager.find(Court.class, idPista);
 		if(pista == null) throw new IllegalArgumentException("La pista no existe");
 
-		//TODO Comprobar que el horario especificado es valido
-		
+		// Conversion de las fechas
+		LocalDateTime inicioDateTime = LocalDateTime.parse(inicio);
+		LocalDateTime finDateTime = LocalDateTime.parse(fin);
+		if (inicioDateTime.isAfter(finDateTime) || inicioDateTime.isEqual(finDateTime))
+			throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la de fin");
+
 		//Crear partido
 		Partido partido = new Partido();
 		partido.setPista(pista);
-		partido.setInicio(LocalDateTime.parse(inicio));
-		partido.setFin(LocalDateTime.parse(fin));
+		partido.setInicio(inicioDateTime);
+		partido.setFin(finDateTime);
 		partido.setPrivate(false);
 		partido.setChatToken(generateRandomBase64Token(12));
 		entityManager.persist(partido);
-		
+
 		//El creador juega en el partido
 		Juega juega = new Juega();
 		juega.setPartido(partido);
 		juega.setUser(requester);
 		entityManager.persist(juega);
 
-		return "admin";
+		return "endMatch";
 	}
 }
