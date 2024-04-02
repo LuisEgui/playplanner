@@ -110,6 +110,29 @@ function go(url, method, data = {}, headers = false) {
 }
 
 /**
+ * Escapes special characters to prevent XSS/breakage when generating HTML
+ * via, say, insertAdjacentHTML or insertHTML.
+ * 
+ * (see https://stackoverflow.com/a/9756789/15472)
+ * 
+ * @param {string} s
+ * 
+ * @Author manuel.freire@fdi.ucm.es
+ */
+function escapar(s) {
+    return ('' + s) /* Forces the conversion to string. */
+        .replace(/\\/g, '\\\\') /* This MUST be the 1st replacement. */
+        .replace(/\t/g, '\\t') /* These 2 replacements protect whitespaces. */
+        .replace(/\n/g, '\\n')
+        .replace(/\u00A0/g, '\\u00A0') /* Useful but not absolutely necessary. */
+        .replace(/&/g, '\\x26') /* These 5 replacements protect from HTML/XML. */
+        .replace(/'/g, '\\x27')
+        .replace(/"/g, '\\x22')
+        .replace(/</g, '\\x3C')
+        .replace(/>/g, '\\x3E');
+}
+
+/**
  * Fills an image element with the image retrieved from a URL.
  * 
  * while `targetImg.src = url` would also display the image, this code
@@ -226,4 +249,5 @@ document.addEventListener("DOMContentLoaded", () => {
     // add your after-page-loaded JS code here; or even better, call 
     // 	 document.addEventListener("DOMContentLoaded", () => { /* your-code-here */ });
     //   (assuming you do not care about order-of-execution, all such handlers will be called correctly)
+
 });

@@ -74,8 +74,11 @@ public class AdminController {
 	}
 	
     @PostMapping("/banUser")
+	@ResponseBody
 	@Transactional
-	public String banUser(@RequestParam("username") String username, Model model, HttpSession session)  {
+	public String banUser(@RequestBody JsonNode o, Model model, HttpSession session)  {
+		
+		String username = o.get("username").asText();
 		
 		User banned = entityManager.createNamedQuery("User.byUsername", User.class)
 		.setParameter("username", username)
@@ -83,6 +86,6 @@ public class AdminController {
 
 		banned.setEnabled(false);
 
-		return "admin";
+		return "{\"result\": \"usuario baneado.\"}";
 	}	
 }

@@ -80,13 +80,14 @@
                         </div>
 
                         <div class="modal-body">
-                            <form method="POST" th:action="@{/admin/banUser}">
+                            <div id="infoBan"></div>
+                            <form method="POST" th:action="@{/admin/banUser}" id="banuser">
                                 <div>
-                                    <div><label for="nombre-usuario"> Nombre de usuario: </label></div>
-                                    <input type="text" id="nombre-usuario" name="username" required>
+                                    <div><label for="username"> Nombre de usuario: </label></div>
+                                    <input type="text" id="username" name="username" required>
                                 </div>
                                     
-                                <input type="submit" class="btn btn-danger">
+                                <input type="submit" class="btn btn-danger" id="banuser-btn">
                             </form>
                         </div>
 
@@ -101,5 +102,6 @@
     </main>
 
     <th:block th:replace="fragments/footer.html :: footer" />
+    <script th:src="@{/js/admin.js}"></script>
 </body>
 </html>

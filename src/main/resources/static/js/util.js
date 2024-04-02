@@ -14,46 +14,27 @@
  * @Author manuel.freire@fdi.ucm.es
  */
 
-export function one(selector) {
+function one(selector) {
     return document.querySelector(selector);
 }
 
-export function all(selector) {
+function all(selector) {
     return document.querySelectorAll(selector);
 }
 
-export function add(selector, html) {
+function add(selector, html) {
     one(selector).insertAdjacentHTML("beforeend", html);
 }
 
-export function clean(selector) {
+function clean(selector) {
     all(selector).forEach(o => o.innerHTML = '')
 }
 
-export const UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-export const LOWER = 'abcdefghijklmnopqrstuvwxyz';
-export const DIGITS = '01234567890';
+const UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const LOWER = 'abcdefghijklmnopqrstuvwxyz';
+const DIGITS = '01234567890';
 
-/**
- * Escapes special characters to prevent XSS/breakage when generating HTML
- * via, say, insertAdjacentHTML or insertHTML.
- * 
- * (see https://stackoverflow.com/a/9756789/15472)
- * 
- * @param {string} s
- */
-export function escape(s) {
-    return ('' + s) /* Forces the conversion to string. */
-        .replace(/\\/g, '\\\\') /* This MUST be the 1st replacement. */
-        .replace(/\t/g, '\\t') /* These 2 replacements protect whitespaces. */
-        .replace(/\n/g, '\\n')
-        .replace(/\u00A0/g, '\\u00A0') /* Useful but not absolutely necessary. */
-        .replace(/&/g, '\\x26') /* These 5 replacements protect from HTML/XML. */
-        .replace(/'/g, '\\x27')
-        .replace(/"/g, '\\x22')
-        .replace(/</g, '\\x3C')
-        .replace(/>/g, '\\x3E');
-}
+
 
 /**
  * Quote attribute values to prevent XSS/breakage

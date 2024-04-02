@@ -107,3 +107,4 @@ document.querySelector("#postAvatar").onclick = e => {
         document.querySelector("a.nav-link>img.iwthumb").src = url + cacheBuster;
     });
 };
+
