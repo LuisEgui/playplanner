@@ -366,7 +366,7 @@ public class UserController {
         return "chatMatch";
     }
 
-	@RequestMapping(value = "/endMatch", method = {RequestMethod.GET, RequestMethod.POST})
+	@GetMapping("/endMatch")
 	public String endMatch(Model model) {
 		return "endMatch";
 	}
@@ -416,6 +416,7 @@ public class UserController {
 		juega.setPartido(partido);
 		juega.setUser(requester);
 		entityManager.persist(juega);
+		entityManager.flush();
 
 		return "endMatch";
 	}
