@@ -14,6 +14,15 @@ import java.util.List;
 
 @Entity
 @Data
+@NamedQueries({
+    @NamedQuery(name="Partido.horasOcupadas",
+            query="SELECT HOUR(p.inicio) FROM Partido p "
+            + "WHERE p.pista.id = :pistaId "
+            + "AND p.inicio >= :fecha "
+            + "AND p.inicio < :fechaMasUnDia"),
+    @NamedQuery(name="Partido.allPartidos",
+            query="SELECT p FROM Partido p ")
+})
 public class Partido {
     
     public enum Estado {

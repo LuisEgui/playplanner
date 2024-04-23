@@ -4,6 +4,31 @@
 <head>
     <th:block th:replace="fragments/head :: header" />
     <title>IW: Crear partido</title>
+    <script>
+        function updatePistas(deporte) {
+            window.location.href = '/user/crearPartido?deporte=' + deporte;
+        }
+
+        function verDisponibilidad(pistaId, fecha) {
+            var deporte = document.querySelector('input[name="deporte"]:checked').value;
+            window.location.href = '/user/crearPartido?deporte=' + deporte + '&pistaId=' + pistaId + '&fecha=' + fecha;
+        }
+
+        // Evento de cambio para el elemento de selección de pista
+        document.getElementById('pista').addEventListener('change', function() {
+            localStorage.setItem('pista', this.value);
+        });
+
+        // Evento de cambio para el elemento de entrada de fecha
+        document.getElementById('inicio').addEventListener('change', function() {
+            localStorage.setItem('fecha', this.value);
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var today = new Date().toISOString().split('T')[0];
+            document.getElementById('inicio').setAttribute('min', today);
+        });
+    </script>
 </head>
 
 <body class="d-flex flex-column h-100">
@@ -13,21 +38,38 @@
         <div class="container">
             <h1> Crear un partido </h1>
             <hr>
-    
-            <form method="POST" th:action="@{/user/crearPartido}">
 
-                <label for="inicio"> Hora inicio </label>
-                <input type="datetime-local" name="inicio" id="inicio" required>
-                <label for="fin">  Hora fin </label>
-                <input type="datetime-local" name="fin" id="fin" required>
+            <form method="POST" th:action="@{/user/crearPartido}">
+                <input type="radio" id="baloncesto" name="deporte" value="Baloncesto" required onchange="updatePistas('Baloncesto')" th:checked="${deporteSeleccionado == 'Baloncesto'}">
+                <label for="baloncesto">Baloncesto</label>
+                <input type="radio" id="tenis" name="deporte" value="Tenis" required onchange="updatePistas('Tenis')" th:checked="${deporteSeleccionado == 'Tenis'}">
+                <label for="tenis">Tenis</label>
                 <hr>
 
                 <label for="pista">Pista: </label>
-                <input type="text" name="pista" id="pista" required>
+                <select name="pista" id="pista" required>
+                    <option value="">--Por favor seleccione una pista--</option>
+                    <option th:each="pista : ${pistas}" th:value="${pista.id}" th:text="${pista.nombre}" th:selected="${pista.id == pistaSeleccionada}"></option>
+                </select>
+                <hr>
+                
+                <label for="inicio"> Fecha </label>
+                <input type="date" name="inicio" id="inicio" required th:value="${fechaSeleccionada}">
+                <hr>
+
+                <input class="btn btn-outline-dark" type="button" value="Ver disponibilidad" id="ver" onclick="verDisponibilidad(document.getElementById('pista').value, document.getElementById('inicio').value)">                
+                <div th:if="${mostrarHoras}">
+                    <br>
+                    <div th:each="hora : ${horasDisponibles}">
+                        <input type="radio" th:value="${hora}" th:id="${hora}" name="horaSeleccionada" required/>
+                        <label th:for="${hora}">[[${hora}]]</label><br/>
+                    </div>
+                </div>
                 <hr>
 
                 <input class="btn btn-outline-dark" type="submit" value="Crear" id="crear">
-            </th:form>
+
+            </form>
         </div>
     </main>
 

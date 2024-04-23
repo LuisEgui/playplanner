@@ -20,9 +20,19 @@ VALUES (5, TRUE, 'USER', 'e',
 
 
 INSERT INTO IWCourt (id, nombre, localizacion, apertura, cierre, tipo)
-VALUES (1, 'Pista prueba 1', 'Calle agjsdksdn', '08:00', '20:00', 'Baloncesto');
+VALUES (1, 'Cancha baloncesto San Pol de Mar', 'Calle de San Pol de Mar, 11', 8, 20, 'Baloncesto');
 
-INSERT INTO Partido (id, fin, inicio, is_private, pista_id, chat_token) VALUES (1, '2024-11-11T18:00', '2024-11-11T19:00', false, 1, 'XhbWy-uPBI1N81IT');
+INSERT INTO IWCourt (id, nombre, localizacion, apertura, cierre, tipo)
+VALUES (2, 'Pistas de tenis del Centro Deportivo Municipal Concepción', 'C. Hermanos de Pablo, 44, Cdad. Lineal, Madrid', 8, 20, 'Tenis');
+
+INSERT INTO IWCourt (id, nombre, localizacion, apertura, cierre, tipo)
+VALUES (3, 'Cancha baloncesto Parque de la Paz', 'Parque de la Paz, C. la Paz, 4, Alcorcón', 8, 20, 'Baloncesto');
+
+INSERT INTO IWCourt (id, nombre, localizacion, apertura, cierre, tipo)
+VALUES (4, 'Pista central tenis, Club de Campo Villa de Madrid', 'Moncloa - Aravaca, 28040 Madrid', 8, 20, 'Tenis');
+
+INSERT INTO Partido (id, fin, inicio, is_private, pista_id, chat_token) 
+VALUES (1, '2024-11-11T10:00', '2024-11-11T08:00', false, 1, 'XhbWy-uPBI1N81IT');
 
 --Participaciones en partido
 INSERT INTO IWJUEGA (id, partido_id, user_id) VALUES (1, 1, 2);
