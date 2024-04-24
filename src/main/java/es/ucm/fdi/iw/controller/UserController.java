@@ -5,6 +5,7 @@ import es.ucm.fdi.iw.model.Mensaje;
 import es.ucm.fdi.iw.model.Transferable;
 import es.ucm.fdi.iw.model.User;
 import es.ucm.fdi.iw.model.User.Role;
+import lombok.Data;
 import es.ucm.fdi.iw.model.Court;
 import es.ucm.fdi.iw.model.Partido;
 import es.ucm.fdi.iw.model.Juega;
@@ -12,6 +13,7 @@ import es.ucm.fdi.iw.model.Juega;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,6 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
@@ -43,7 +46,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.io.*;
 import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.*;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -321,18 +326,6 @@ public class UserController {
 		return "{\"result\": \"message sent.\"}";
 	}
 
-	//Provisional para obtener listados de partidos
-	@GetMapping("/verPartidos") 
-	public String verPartidos(Model model) { 
-		List<Partido> partidos = entityManager
-		.createNamedQuery("Partido.partidosAbiertos", Partido.class)
-		.setParameter("fechaActual", LocalDateTime.now())
-		.getResultList();
-
-		model.addAttribute("partidos", partidos);
-		return "listadoPartidos";
-	}
-
 	@GetMapping("/filtermatches")
 	public String filter(Model model) {
 		return "filtermatches";
@@ -342,6 +335,11 @@ public class UserController {
 	@Transactional
     public String getMatch(@PathVariable long id, Model model, HttpSession session) {
         Partido p = entityManager.find(Partido.class, id);
+		if(p == null) {
+			model.addAttribute("error", "El partido no existe");
+			return "errorAux";
+		}
+
 		User requester = getRequester(session);
 		Juega j = p.getJuega(requester);
 
@@ -377,64 +375,120 @@ public class UserController {
 	}
 
 	@GetMapping("/crearPartido")
-	public String crearPartido(Model model) {
+	public String crearPartido(@RequestParam(required = false) String deporte, @RequestParam(required = false) Long pistaId, 
+	@RequestParam(required = false) String fecha, Model model) {
+		ArrayList<Court> pistas;
+		if (deporte != null) {
+			model.addAttribute("deporteSeleccionado", deporte);
+
+			pistas = (ArrayList<Court>) entityManager
+				.createNamedQuery("Court.byTipoDeporte", Court.class)
+				.setParameter("deporte", deporte)
+				.getResultList();
+
+			if(pistaId != null && fecha != null){
+				model.addAttribute("pistaSeleccionada", pistaId);
+				model.addAttribute("fechaSeleccionada", fecha);
+
+				//Obtener horas libres
+				model.addAttribute("horasDisponibles", verDisponibilidad(pistaId, fecha));
+				model.addAttribute("mostrarHoras", true);
+			}
+			else {
+				model.addAttribute("mostrarHoras", false);
+			}
+		}
+		else {
+			pistas = (ArrayList<Court>) entityManager
+				.createNamedQuery("Court.allCourt", Court.class)
+				.getResultList();
+		}
+
+		model.addAttribute("pistas", pistas);
+
+
 		return "createMatch";
+	}
+
+	private List<String> verDisponibilidad(Long pistaId, String fecha) {
+		
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		LocalDate date = LocalDate.parse(fecha, formatter); 
+
+		List<String> horasDisponibles = new ArrayList<>();
+
+		List<Integer> horasOcupadas;
+		horasOcupadas = (ArrayList<Integer>) entityManager
+				.createNamedQuery("Partido.horasOcupadas", Integer.class)
+				.setParameter("pistaId", pistaId)
+				.setParameter("fecha", date.atStartOfDay())
+				.setParameter("fechaMasUnDia", date.atStartOfDay().plusDays(1))
+				.getResultList();
+
+		log.info("horasOcupadas {}", horasOcupadas);
+		Court c = entityManager.find(Court.class, pistaId);
+		
+		for(int i = c.getApertura(); i < c.getCierre(); i+=2){
+			if(!horasOcupadas.contains(i)){
+				horasDisponibles.add(String.format("%02d:00", i));
+			}
+		}
+				
+		return horasDisponibles;
 	}
 
 	@PostMapping("/crearPartido")
 	@Transactional
 	public String crearPartido(HttpServletResponse response,
 	@RequestParam("pista") Long idPista,
-	@RequestParam("inicio") String inicio, Integer maxParticipantes,
+	@RequestParam("inicio") String inicio,
+	@RequestParam("horaSeleccionada") String horaSeleccionada,
 	Model model, HttpSession session) throws IOException{
 
 		User requester = getRequester(session);
-		boolean error = false;
 
 		//Comprobar que la pista existe y tomarla
         Court pista = entityManager.find(Court.class, idPista);
 		if(pista == null) {
 			model.addAttribute("error", "La pista no existe.");
-			error = true;
+			return "errorAux";
 		}
 
-		//Comprobar que el maximo de participantes especificado no supera al maximo de participantes de la pista.
-		if(maxParticipantes > pista.getMaxp()) {
-			model.addAttribute("error", "El numero maximo de participantes específicado supera al de la pista.");
-			error = true;
-		}
+		// Formatear la fecha y la hora
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		LocalDateTime fechaInicio = LocalDateTime.parse(inicio + " " + horaSeleccionada + ":00", formatter);
+		
+		// Calcular la fecha de fin 
+		LocalDateTime fechaFin = fechaInicio.plusHours(Partido.DURACION_PARTIDOS_HORAS);
 
-		// Conversion de las fechas
-		LocalDateTime inicioDateTime = LocalDateTime.parse(inicio);
-		LocalDateTime finDateTime = inicioDateTime.plusHours(Partido.DURACION_PARTIDOS_HORAS);
-
+		boolean error = false;
 		//Comprobar que no se sobrepasa el dia
-		if(finDateTime.getDayOfYear() != inicioDateTime.getDayOfYear() || finDateTime.getYear() != inicioDateTime.getYear()) {
+		if(fechaFin.getDayOfYear() != fechaInicio.getDayOfYear() || fechaFin.getYear() != fechaInicio.getYear()) {
 			model.addAttribute("error", "La reserva cubre dos dias o mas, eso no esta permitido");
 			error = true;
 		}
 
-		//Comprobar que la fecha de inicio es posterior al momento actual
-		if(inicioDateTime.isBefore(LocalDateTime.now())) {
-			model.addAttribute("error", "La fecha de inicio debe ser posterior al momento actual.");
+		//Comprobar que la fecha de inicio no es anterior al momento actual
+		if(fechaInicio.isBefore(LocalDateTime.now())) {
+			model.addAttribute("error", "La fecha de inicio no puede ser anterior al momento actual");
 			error = true;
 		}
 
 		//Comprobar que la hora de inicio es anterior a la de fin
-		if(!inicioDateTime.isBefore(inicioDateTime)) {
+		if(!fechaInicio.isBefore(fechaFin)) {
 			model.addAttribute("error", "La fecha de inicio debe ser anterior a la de fin.");
 			error = true;
 		}
 		
 		//Comprobar que son horas en punto
-		if(inicioDateTime.getMinute() != 0 || inicioDateTime.getSecond() != 0 || inicioDateTime.getNano() != 0) {
+		if(fechaInicio.getMinute() != 0 || fechaInicio.getSecond() != 0 || fechaInicio.getNano() != 0) {
 			model.addAttribute("error", "No se pueden reservar horas que no sean en punto.");
 			error = true;
 		}
 		
 		//Comprobar que el horario es valido para la pista
-		int horaInicioPartido = inicioDateTime.getHour();
-		int horaFinPartido = finDateTime.getHour();
+		int horaInicioPartido = fechaInicio.getHour();
+		int horaFinPartido = fechaFin.getHour();
 
 		if(horaInicioPartido < pista.getApertura() || horaFinPartido > pista.getCierre()) {
 			model.addAttribute("error", "Horas reservadas no validas para la pista. Horario de la pista: "
@@ -444,26 +498,29 @@ public class UserController {
 		}
 
 		//Comprobar que no hay ya un partido en esa pista a esa hora.
-		Partido conflicto = entityManager
-		.createNamedQuery("Partido.conflicto", Partido.class)
-		.setParameter("courtId", pista.getId())
-		.setParameter("fechaInicio", inicioDateTime)
-		.setParameter("fechaFin", finDateTime)
-		.getSingleResult();
+		Partido conflicto = null;
+		try {
+			conflicto = entityManager
+			.createNamedQuery("Partido.conflicto", Partido.class)
+			.setParameter("courtId", pista.getId())
+			.setParameter("fechaInicio", fechaInicio)
+			.setParameter("fechaFin", fechaFin).getSingleResult();
+		} catch (NoResultException e) { }//Tragarse la excepcion si ocurre porque no ha habido conflictos
 		
 		if(conflicto != null) {
 			model.addAttribute("error", "Ya hay un partido en ese horario en esa pista: " + conflicto.getInicio() + " - " + conflicto.getFin());
 			error = true;
 		} 
-		else if(!error) {
+
+		if(error) { return "errorAux"; }
+		else {
 			//Crear partido
 			Partido partido = new Partido();
 			partido.setPista(pista);
-			partido.setInicio(inicioDateTime);
-			partido.setFin(finDateTime);
+			partido.setInicio(fechaInicio);
+			partido.setFin(fechaFin);
 			partido.setPrivate(false);
 			partido.setChatToken(generateRandomBase64Token(12));
-			partido.setMaxp(maxParticipantes);
 			entityManager.persist(partido);
 
 			//El creador juega en el partido
@@ -475,8 +532,10 @@ public class UserController {
 
 			//Hacer que el creador se suscriba al chat del partido
 			suscribirA(session, partido.getChatToken());
+
+			response.sendRedirect("/user/viewMatches");
+			return "viewMatches";
 		}
-		return "endMatch";
 	}
 
 	@PostMapping("/joinMatch")
@@ -523,11 +582,28 @@ public class UserController {
 		suscribirA(session, partido.getChatToken());
 
 		//Si se ha llegado al maximo de participantes actualizamos el estado del partido a CERRADO
-		if(num_participantes == partido.getMaxp()) {
+		if(num_participantes == partido.getPista().getMaxp()) {
 			partido.setEstado(Partido.Estado.CERRADO);
 		}
 
-		return "{\"result\":".concat(num_participantes.toString()).concat( " }");
+		return "{\"result\":".concat(num_participantes.toString()).concat( " }");		
+	}
+
+	@GetMapping("/viewMatches")
+	public String viewMatches(Model model) {
+		List<Partido> partidos = entityManager
+			.createNamedQuery("Partido.allPartidos", Partido.class)
+			.getResultList();
+
+		List<Court> pistas = new ArrayList<>();
+		for (Partido partido : partidos) {
+			pistas.add(partido.getPista());
+		}
+
+		model.addAttribute("partidos", partidos);
+		model.addAttribute("pistas", pistas);
+
+		return "viewMatches";
 	}
 
 	private User getRequester(HttpSession session) {

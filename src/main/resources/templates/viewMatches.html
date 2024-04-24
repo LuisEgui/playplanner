@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html class="h-100" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <th:block th:replace="fragments/head :: header" />
+    <title>IW: Ver partidos</title>
+    <meta charset="UTF-8">
+    <style>
+        .card-Partido {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            border-radius: 15px;
+            width: calc(100% / 3 - 20px); 
+            margin: 10px; 
+        }
+
+        .card-Partido input {
+            position: absolute;
+            right: 10px;
+            bottom: 10px; 
+        }
+
+        .info-Partido {
+            margin-left: 10px; 
+            margin-right: 10px; 
+            margin-bottom: 10px; 
+        }
+
+        .container-Partidos {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between; 
+            align-items: stretch; 
+            max-width: 100%; 
+        }
+    </style>
+</head>
+
+<body class="d-flex flex-column h-100">
+    <header th:replace="fragments/nav.html :: nav"></header>
+
+    <main class="flex-shrink-0">
+        <div class="container">
+            <h1> Partidos disponibles </h1>
+            <hr>
+
+            <div class="container-Partidos">
+                <div th:each="partido, stat : ${partidos}" class="card-Partido partido">
+                    <div class="info-Partido">
+                        <h5 th:text="${pistas[stat.index].nombre}"></h5>
+                        <p>
+                            <strong>Dirección:</strong> <span th:text="${pistas[stat.index].localizacion}"></span> <br>
+                            <strong>Deporte:</strong> <span th:text="${pistas[stat.index].tipo}"></span><br>
+                            <strong>Fecha:</strong> <span th:text="${#temporals.format(partido.inicio,'dd-MM-yyyy')}"></span><br>
+                            <strong>Hora:</strong> <span th:text="${#temporals.format(partido.inicio,'HH:mm')}"></span> - 
+                                                    <span th:text="${#temporals.format(partido.fin,'HH:mm')}"></span><br>
+                            <strong class="num-participantes">Numero actual de participantes: <td th:text="${partido.juega.size}"></td></strong><br>
+                            <strong>Numero maximo de participantes: <td th:text="${partido.pista.maxp}"></td></strong>
+
+                            <form method="POST" th:action="@{/user/joinMatch}" class="form-unirse">
+                                <input hidden type="text" class="idPartido btn btn-outline-dark" name="idPartido" th:value="${partido.id}">
+                                <button type="submit" class="unirse-btn"> Unirse </button>
+                            </form>
+
+                            <div>
+                                <a class="link" th:href="@{/user/match/{id}(id=${partido.id})}"> Ir al chat del partido </a>
+                            </div>
+                        </p>
+                    </div>
+                                   
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <th:block th:replace="fragments/footer.html :: footer" />
+    <script th:src="@{/js/joinMatch.js}"></script>
+</body>
+
+</html>

@@ -15,14 +15,20 @@ import java.util.List;
 @Entity
 @Data
 @NamedQueries({
+    @NamedQuery(name="Partido.horasOcupadas",
+            query="SELECT HOUR(p.inicio) FROM Partido p "
+            + "WHERE p.pista.id = :pistaId "
+            + "AND p.inicio >= :fecha "
+            + "AND p.inicio < :fechaMasUnDia"),
+
+    @NamedQuery(name="Partido.allPartidos",
+            query="SELECT p FROM Partido p "),
+
 	@NamedQuery(name="Partido.conflicto",
 	query="SELECT p FROM Partido p WHERE p.pista.id = :courtId " +
     "AND  ((:fechaInicio >= p.inicio AND :fechaInicio < p.fin) " +
     "OR (:fechaFin > p.inicio AND :fechaFin <= p.fin) " +
     "OR (:fechaInicio <= p.inicio AND :fechaFin >= p.fin))"),
-
-    @NamedQuery(name="Partido.partidosAbiertos",
-	query="SELECT p FROM Partido p WHERE (p.inicio > :fechaActual) AND Estado = 0"),
 })
 
 public class Partido {
@@ -69,20 +75,17 @@ public class Partido {
 
     private Estado estado = Estado.PREPARANDO;
 
-    private int maxp;
-
     public Partido() {
         this.juega = new ArrayList<Juega>();
     }
 
-    public Partido(Court pista, LocalDateTime inicio, LocalDateTime fin, boolean isPrivate, int maxParticipantes) {
+    public Partido(Court pista, LocalDateTime inicio, LocalDateTime fin, boolean isPrivate) {
         this.pista = pista;
         this.inicio = inicio;
         this.fin = fin;
         this.isPrivate = isPrivate;
         this.juega = new ArrayList<Juega>();
         this.mensajes = new ArrayList<Mensaje>();
-        this.maxp = maxParticipantes;
     }
 
     public void addJuega(Juega juega) {

@@ -1,6 +1,7 @@
 package es.ucm.fdi.iw.model;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
 import javax.persistence.*;
@@ -18,6 +19,16 @@ import java.util.List;
 
 @Entity
 @Data
+@NamedQueries({
+        @NamedQuery(name="Court.byTipoDeporte",
+                query="SELECT c From Court c "
+                        + "WHERE c.tipo = :deporte"),
+        @NamedQuery(name="Court.allCourt",
+                query="SELECT c FROM Court c"),
+        @NamedQuery(name="Court.byId",
+                query="SELECT c FROM Court c "
+                        + "WHERE c.id = :partidoId")
+})
 @Table(name="IWCourt")
 public class Court {
     @Id
