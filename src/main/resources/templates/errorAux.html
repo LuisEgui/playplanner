@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <th:block th:replace="fragments/head :: header" />
+    <title >IW: Error</title>
+</head>
+
+<body>
+    <nav th:replace="fragments/nav.html :: nav">
+        Nav goes here
+    </nav>
+
+    <div class="container">
+        <div class="main">
+
+        <h4>Error <span th:text="${status}"></span></h4>
+
+        <div th:if="${error}" th:text="${error}">
+        </div>
+            
+    </div>
+    <!-- end container div -->
+
+    <footer th:replace="fragments/footer.html :: footer">
+        Footer goes here
+    </footer>
+</body>
+
+</html>

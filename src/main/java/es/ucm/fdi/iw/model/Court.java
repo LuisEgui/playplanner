@@ -28,9 +28,12 @@ public class Court {
     private String nombre;
     private String tipo;
     private String localizacion;
-    //Cambiado a String temporalmente
-    private String apertura;
-    private String cierre;
+    private String localidad;
+
+    private int apertura;
+    private int cierre;
+
+    private int maxp;
 
     //@OneToMany(mappedBy = "court")
     @OneToMany

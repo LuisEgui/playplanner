@@ -10,9 +10,15 @@
 <body class="d-flex flex-column h-100">
     <header th:replace="fragments/nav.html :: nav"></header>
 
+    <div th:if="${error}" th:text="${error}">
+        No hay error
+    </div>
+
     <main class="flex-shrink-0">
         <div class="container my-5">
             <h1 class="text-center mb-4"> Crear un partido </h1>
+            <h2>El tiempo de reserva son 2 horas</h2>
+
             <form method="POST" th:action="@{/user/crearPartido}" class="needs-validation" novalidate>
                 <div class="row g-3">
                     <div class="col-md-6">
@@ -22,19 +28,16 @@
                             Por favor, selecciona una hora de inicio.
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <label for="fin" class="form-label">Hora fin</label>
-                        <input type="datetime-local" class="form-control" name="fin" id="fin" required>
-                        <div class="invalid-feedback">
-                            Por favor, selecciona una hora de fin.
-                        </div>
-                    </div>
                     <div class="col-12">
                         <label for="pista" class="form-label">Pista</label>
                         <input type="text" class="form-control" name="pista" id="pista" required>
                         <div class="invalid-feedback">
                             Por favor, introduce el nombre de la pista.
                         </div>
+                    </div>
+                    <div class="col-12">
+                        <label></label>
+                        <input >
                     </div>
                 </div>
 

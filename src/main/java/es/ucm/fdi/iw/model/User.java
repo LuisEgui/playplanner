@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.transaction.Transactional;
+
 /**
  * An authorized user of the system.
  */
@@ -90,6 +92,7 @@ public class User implements Transferable<User.Transfer> {
     }
 
 	@Override
+    @Transactional
     public Transfer toTransfer() {
 		return new Transfer(id,	username, received.size(), sent.size());
 	}
@@ -98,5 +101,9 @@ public class User implements Transferable<User.Transfer> {
 	public String toString() {
 		return toTransfer().toString();
 	}
+
+    public boolean isAdmin() {
+        return hasRole(User.Role.ADMIN);
+    }
 }
 

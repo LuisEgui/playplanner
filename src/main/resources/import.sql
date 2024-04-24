@@ -19,10 +19,11 @@ VALUES (5, TRUE, 'USER', 'e',
     '{bcrypt}$2a$10$2BpNTbrsarbHjNsUWgzfNubJqBRf.0Vz9924nRSHBqlbPKerkgX.W');
 
 
-INSERT INTO IWCourt (id, nombre, localizacion, apertura, cierre, tipo)
-VALUES (1, 'Pista prueba 1', 'Calle agjsdksdn', '08:00', '20:00', 'Baloncesto');
+INSERT INTO IWCourt (id, nombre, localidad, localizacion, apertura, cierre, tipo, maxp)
+VALUES (1, 'Pista prueba 1', 'Alcorcón', 'Calle agjsdksdn', '8', '20', 'Baloncesto', 10);
 
-INSERT INTO Partido (id, fin, inicio, is_private, pista_id, chat_token) VALUES (1, '2024-11-11T18:00', '2024-11-11T19:00', false, 1, 'XhbWy-uPBI1N81IT');
+INSERT INTO Partido (id, inicio, fin, is_private, pista_id, chat_token, maxp, estado) VALUES (1, '2024-11-11T18:00', '2024-11-11T19:00', false, 1, 'XhbWy-uPBI1N81IT', 8, 0);
+INSERT INTO Partido (id, inicio, fin, is_private, pista_id, chat_token, maxp, estado) VALUES (2, '2024-11-11T16:00', '2024-11-11T17:00', false, 1, 'XhbWy-uPBI1N81IO', 10, 0);
 
 --Participaciones en partido
 INSERT INTO IWJUEGA (id, partido_id, user_id) VALUES (1, 1, 2);

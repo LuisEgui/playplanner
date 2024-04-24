@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import javax.validation.constraints.FutureOrPresent;
-import javax.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -16,6 +14,17 @@ import java.util.List;
 
 @Entity
 @Data
+@NamedQueries({
+	@NamedQuery(name="Partido.conflicto",
+	query="SELECT p FROM Partido p WHERE p.pista.id = :courtId " +
+    "AND  ((:fechaInicio >= p.inicio AND :fechaInicio < p.fin) " +
+    "OR (:fechaFin > p.inicio AND :fechaFin <= p.fin) " +
+    "OR (:fechaInicio <= p.inicio AND :fechaFin >= p.fin))"),
+
+    @NamedQuery(name="Partido.partidosAbiertos",
+	query="SELECT p FROM Partido p WHERE (p.inicio > :fechaActual) AND Estado = 0"),
+})
+
 public class Partido {
 
     public enum Estado {
@@ -24,12 +33,14 @@ public class Partido {
         TERMINADO
     }
 
+    public static final int DURACION_PARTIDOS_HORAS = 2;
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gen")
     @SequenceGenerator(name = "gen", sequenceName = "gen")
 	private long id;
 
-    @NotNull
+    //@NotNull
     @ManyToOne
     private Court pista;
 
@@ -41,12 +52,12 @@ public class Partido {
     @JoinColumn(name = "partido_id")
     private List<Mensaje> mensajes;
 
-    @NotNull
-    @FutureOrPresent
+    //@NotNull
+    //@FutureOrPresent
     private LocalDateTime inicio;
 
-    @NotNull
-    @FutureOrPresent
+    //@NotNull
+    //@FutureOrPresent
     private LocalDateTime fin;
 
     @Column(nullable = true)
@@ -58,17 +69,20 @@ public class Partido {
 
     private Estado estado = Estado.PREPARANDO;
 
+    private int maxp;
+
     public Partido() {
         this.juega = new ArrayList<Juega>();
     }
 
-    public Partido(@NotNull Court pista, @NotNull @FutureOrPresent LocalDateTime inicio, @NotNull @FutureOrPresent LocalDateTime fin, boolean isPrivate) {
+    public Partido(Court pista, LocalDateTime inicio, LocalDateTime fin, boolean isPrivate, int maxParticipantes) {
         this.pista = pista;
         this.inicio = inicio;
         this.fin = fin;
         this.isPrivate = isPrivate;
         this.juega = new ArrayList<Juega>();
         this.mensajes = new ArrayList<Mensaje>();
+        this.maxp = maxParticipantes;
     }
 
     public void addJuega(Juega juega) {
@@ -93,5 +107,13 @@ public class Partido {
 
     public void setEstado(Estado estado) {
         this.estado = estado;
+    }
+
+    public Juega getJuega(User jugador) {
+        Juega resultado = null;
+        for(Juega j : juega) {
+            if(j.getUser().getId() == jugador.getId()) resultado = j;
+        }
+        return resultado;
     }
 }

@@ -44,6 +44,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.*;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.time.temporal.*;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -241,47 +242,31 @@ public class UserController {
 
     /**
      * Returns JSON with all received messages
-
+	
     @GetMapping(path = "received", produces = "application/json")
 	@Transactional // para no recibir resultados inconsistentes
 	@ResponseBody  // para indicar que no devuelve vista, sino un objeto (jsonizado)
 	public List<Mensaje.Transfer> retrieveMessages(HttpSession session) {
-		long userId = ((User)session.getAttribute("u")).getId();
-		User u = entityManager.find(User.class, userId);
+		User u = getRequester(session);
+
 		List<Mensaje> mensajes = new ArrayList<Mensaje>();
 
-		//Recorrer todos los partidos en los que participa, buscando mensajes no leidos
+		//Recorrer todos los partidos en los que participa, buscando mensajes no leidos.
+		//Usuario normal solo puede recibir mensajes a traves de chats de partido.
 		for(Juega j: u.getJuega()) {
 			mensajes.addAll(entityManager.createNamedQuery("Mensaje.noLeidos", Mensaje.class)
 			.setParameter("matchId", j.getPartido().getId()).getResultList());
 		}
 
+		if(u.isAdmin()) {
+			mensajes.addAll(null);//unreadREports)
+		}
+
 		log.info("Generating message list for user {} ({} messages)",
 				u.getUsername(), mensajes.size());
 		return  mensajes.stream().map(Transferable::toTransfer).collect(Collectors.toList());
-	}
-	*/
-
-    /**
-     * Returns JSON with count of unread messages
-
-	@GetMapping(path = "unread", produces = "application/json")
-	@ResponseBody
-	public String checkUnread(HttpSession session) {
-		long userId = ((User)session.getAttribute("u")).getId();
-		User u = entityManager.find(User.class, userId);
-		long unread = 0;
-
-		//Recorrer todos los partidos en los que participa, buscando mensajes no leidos
-		for(Juega j: u.getJuega()) {
-			unread += entityManager.createNamedQuery("Mensaje.countUnread", Long.class)
-			.setParameter("matchId", j.getPartido().getId())
-			.getSingleResult();
-		}
-
-		session.setAttribute("unread", unread);
-		return "{\"unread\": " + unread + "}";
-    }*/
+	}*/
+	
 
     /**
      * Posts a message to a match.
@@ -303,10 +288,7 @@ public class UserController {
 
 
 		//Comprobar que el emisor pertenece al partido o bien es admin
-		boolean pertenece = false;
-		for(Juega j : sender.getJuega()) {
-			if(j.getUser().getId() == sender.getId()) pertenece = true;
-		}
+		boolean pertenece = p.getJuega(sender) != null;
 		if(!pertenece && !sender.hasRole(Role.ADMIN))
 			 throw new IllegalArgumentException("No perteneces al partido y no eres admin");
 
@@ -339,6 +321,18 @@ public class UserController {
 		return "{\"result\": \"message sent.\"}";
 	}
 
+	//Provisional para obtener listados de partidos
+	@GetMapping("/verPartidos") 
+	public String verPartidos(Model model) { 
+		List<Partido> partidos = entityManager
+		.createNamedQuery("Partido.partidosAbiertos", Partido.class)
+		.setParameter("fechaActual", LocalDateTime.now())
+		.getResultList();
+
+		model.addAttribute("partidos", partidos);
+		return "listadoPartidos";
+	}
+
 	@GetMapping("/filtermatches")
 	public String filter(Model model) {
 		return "filtermatches";
@@ -348,6 +342,14 @@ public class UserController {
 	@Transactional
     public String getMatch(@PathVariable long id, Model model, HttpSession session) {
         Partido p = entityManager.find(Partido.class, id);
+		User requester = getRequester(session);
+		Juega j = p.getJuega(requester);
+
+		if(j == null && !requester.isAdmin()) {
+			model.addAttribute("error", "No perteneces al partido");
+			return "errorAux";
+		}
+		
         model.addAttribute("partido", p);
 
 		List<Mensaje> mensajes = new ArrayList<Mensaje>();
@@ -355,14 +357,9 @@ public class UserController {
 		for(Mensaje m: p.getMensajes()) {
 			if(!m.isReport()) mensajes.add(m);
 		}
+
 		model.addAttribute("mensajes_chat", mensajes);
-
-		//TODO marcar los mensajes como leidos por ese usuario
-
-		/* 1. Ejecutar named query que tome todos los Leido por ese usuario de este chat
-		 * 2. Iterar sobre todos los mensajes del partido y crear un nuevo leido para cada uno nuevo
-		 */
-
+		if(j != null) j.setUltimoAcceso(LocalDateTime.now());
         return "chatMatch";
     }
 
@@ -388,36 +385,160 @@ public class UserController {
 	@Transactional
 	public String crearPartido(HttpServletResponse response,
 	@RequestParam("pista") Long idPista,
-	@RequestParam("inicio") String inicio,
-	@RequestParam("fin") String fin,
+	@RequestParam("inicio") String inicio, Integer maxParticipantes,
 	Model model, HttpSession session) throws IOException{
 
-        User requester = (User)session.getAttribute("u");
+		User requester = getRequester(session);
+		boolean error = false;
+
+		//Comprobar que la pista existe y tomarla
         Court pista = entityManager.find(Court.class, idPista);
-		if(pista == null) throw new IllegalArgumentException("La pista no existe");
+		if(pista == null) {
+			model.addAttribute("error", "La pista no existe.");
+			error = true;
+		}
+
+		//Comprobar que el maximo de participantes especificado no supera al maximo de participantes de la pista.
+		if(maxParticipantes > pista.getMaxp()) {
+			model.addAttribute("error", "El numero maximo de participantes específicado supera al de la pista.");
+			error = true;
+		}
 
 		// Conversion de las fechas
 		LocalDateTime inicioDateTime = LocalDateTime.parse(inicio);
-		LocalDateTime finDateTime = LocalDateTime.parse(fin);
-		if (inicioDateTime.isAfter(finDateTime) || inicioDateTime.isEqual(finDateTime))
-			throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la de fin");
+		LocalDateTime finDateTime = inicioDateTime.plusHours(Partido.DURACION_PARTIDOS_HORAS);
 
-		//Crear partido
-		Partido partido = new Partido();
-		partido.setPista(pista);
-		partido.setInicio(inicioDateTime);
-		partido.setFin(finDateTime);
-		partido.setPrivate(false);
-		partido.setChatToken(generateRandomBase64Token(12));
-		entityManager.persist(partido);
+		//Comprobar que no se sobrepasa el dia
+		if(finDateTime.getDayOfYear() != inicioDateTime.getDayOfYear() || finDateTime.getYear() != inicioDateTime.getYear()) {
+			model.addAttribute("error", "La reserva cubre dos dias o mas, eso no esta permitido");
+			error = true;
+		}
 
-		//El creador juega en el partido
+		//Comprobar que la fecha de inicio es posterior al momento actual
+		if(inicioDateTime.isBefore(LocalDateTime.now())) {
+			model.addAttribute("error", "La fecha de inicio debe ser posterior al momento actual.");
+			error = true;
+		}
+
+		//Comprobar que la hora de inicio es anterior a la de fin
+		if(!inicioDateTime.isBefore(inicioDateTime)) {
+			model.addAttribute("error", "La fecha de inicio debe ser anterior a la de fin.");
+			error = true;
+		}
+		
+		//Comprobar que son horas en punto
+		if(inicioDateTime.getMinute() != 0 || inicioDateTime.getSecond() != 0 || inicioDateTime.getNano() != 0) {
+			model.addAttribute("error", "No se pueden reservar horas que no sean en punto.");
+			error = true;
+		}
+		
+		//Comprobar que el horario es valido para la pista
+		int horaInicioPartido = inicioDateTime.getHour();
+		int horaFinPartido = finDateTime.getHour();
+
+		if(horaInicioPartido < pista.getApertura() || horaFinPartido > pista.getCierre()) {
+			model.addAttribute("error", "Horas reservadas no validas para la pista. Horario de la pista: "
+			 + pista.getApertura() + " - " + pista.getCierre());
+
+			error = true;
+		}
+
+		//Comprobar que no hay ya un partido en esa pista a esa hora.
+		Partido conflicto = entityManager
+		.createNamedQuery("Partido.conflicto", Partido.class)
+		.setParameter("courtId", pista.getId())
+		.setParameter("fechaInicio", inicioDateTime)
+		.setParameter("fechaFin", finDateTime)
+		.getSingleResult();
+		
+		if(conflicto != null) {
+			model.addAttribute("error", "Ya hay un partido en ese horario en esa pista: " + conflicto.getInicio() + " - " + conflicto.getFin());
+			error = true;
+		} 
+		else if(!error) {
+			//Crear partido
+			Partido partido = new Partido();
+			partido.setPista(pista);
+			partido.setInicio(inicioDateTime);
+			partido.setFin(finDateTime);
+			partido.setPrivate(false);
+			partido.setChatToken(generateRandomBase64Token(12));
+			partido.setMaxp(maxParticipantes);
+			entityManager.persist(partido);
+
+			//El creador juega en el partido
+			Juega juega = new Juega();
+			juega.setPartido(partido);
+			juega.setUser(requester);
+			entityManager.persist(juega);
+			entityManager.flush();
+
+			//Hacer que el creador se suscriba al chat del partido
+			suscribirA(session, partido.getChatToken());
+		}
+		return "endMatch";
+	}
+
+	@PostMapping("/joinMatch")
+	@Transactional
+	@ResponseBody
+	public String unirseAPartido(HttpServletResponse response,
+	@RequestBody JsonNode o,
+	Model model, HttpSession session) throws IOException{
+
+		Long idPartido = o.get("idPartido").asLong();
+		User requester = getRequester(session);
+		Partido partido = entityManager.find(Partido.class, idPartido);
+		Integer num_participantes = partido.getJuega().size();
+		
+		//Comprobar que no es admin
+		if(requester.hasRole(User.Role.ADMIN)) {
+			response.setStatus(400);
+			return "Eres administrador";
+		}
+
+		//Comprobar que no pertenece ya al partido
+		if(partido.getJuega(requester) != null) {
+			response.setStatus(400);
+			return "Ya perteneces al partido";
+		}
+
+		//Comprobar que el partido no esta cerrado ni ha terminado
+		if(partido.getEstado().equals(Partido.Estado.CERRADO) ||
+		partido.getEstado().equals(Partido.Estado.TERMINADO)) {
+			response.setStatus(400);
+			return "El partido esta cerrado o ya ha terminado";
+		}
+
+		//Meter al jugador en el partido
 		Juega juega = new Juega();
 		juega.setPartido(partido);
 		juega.setUser(requester);
 		entityManager.persist(juega);
 		entityManager.flush();
 
-		return "endMatch";
+		num_participantes++;
+
+		//El jugador se suscribe al chat del partido
+		suscribirA(session, partido.getChatToken());
+
+		//Si se ha llegado al maximo de participantes actualizamos el estado del partido a CERRADO
+		if(num_participantes == partido.getMaxp()) {
+			partido.setEstado(Partido.Estado.CERRADO);
+		}
+
+		return "{\"result\":".concat(num_participantes.toString()).concat( " }");
+	}
+
+	private User getRequester(HttpSession session) {
+		User requester = (User)session.getAttribute("u");
+		requester = entityManager.find(User.class, requester.getId());
+		return requester;
+	}
+
+	private void suscribirA(HttpSession session, String chat_token) {
+		String topics = session.getAttribute("topics").toString();
+		topics.concat(",").concat(chat_token);
+		session.setAttribute("topics", topics);
 	}
 }
