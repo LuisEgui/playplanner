@@ -32,8 +32,11 @@ if (ws.receive) {
     const oldFn = ws.receive; // guarda referencia a manejador anterior
     ws.receive = (m) => {
         oldFn(m); // llama al manejador anterior
-        messageDiv.insertAdjacentHTML("beforeend", renderMsg(m));
-        console.log("He recibido esto por ws" + m);
+
+        //Controlar que lo que se recibe por ws petenece al chat del partido actual.
+        if(parseInt(m.to) == idPartido) {
+            messageDiv.insertAdjacentHTML("beforeend", renderMsg(m));
+        }
     }
 }
 

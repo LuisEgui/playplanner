@@ -31,6 +31,9 @@ import es.ucm.fdi.iw.model.Partido;
 import es.ucm.fdi.iw.model.Transferable;
 import es.ucm.fdi.iw.model.User;
 
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.http.HttpStatus;
+
 /**
  *  Site administration.
  *
@@ -44,6 +47,11 @@ public class AdminController {
 
     @Autowired
 	private EntityManager entityManager;
+
+	@ResponseStatus(
+		value=HttpStatus.FORBIDDEN,
+		reason="No se puede banear a un administrador.")  
+	public static class BanearAdminException extends RuntimeException {}
 
 	@GetMapping("/")
     public String index(Model model) {
@@ -83,6 +91,11 @@ public class AdminController {
 		User banned = entityManager.createNamedQuery("User.byUsername", User.class)
 		.setParameter("username", username)
 		.getSingleResult();
+
+		if(banned.hasRole(User.Role.ADMIN)) {
+			//TODO Bloquear tambien boton en vista si se quiere banear a admin
+			throw new BanearAdminException();
+		}
 
 		banned.setEnabled(false);
 

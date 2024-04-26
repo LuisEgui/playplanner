@@ -35,6 +35,8 @@ import lombok.AllArgsConstructor;
 	@NamedQuery(name="Mensaje.noLeidos", 
 	query="SELECT m FROM Mensaje m WHERE m.dateRead = null")
 })
+
+//SELECT m FROM Mensaje m WHERE m.dateSent > :x AND partido.id = :idPartido;
 @Data
 public class Mensaje implements Transferable<Mensaje.Transfer> {
 	

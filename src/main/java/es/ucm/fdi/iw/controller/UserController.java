@@ -5,6 +5,7 @@ import es.ucm.fdi.iw.model.Mensaje;
 import es.ucm.fdi.iw.model.Transferable;
 import es.ucm.fdi.iw.model.User;
 import es.ucm.fdi.iw.model.User.Role;
+import lombok.Data;
 import es.ucm.fdi.iw.model.Court;
 import es.ucm.fdi.iw.model.Partido;
 import es.ucm.fdi.iw.model.Juega;
@@ -12,6 +13,7 @@ import es.ucm.fdi.iw.model.Juega;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -31,6 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
@@ -42,7 +46,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.io.*;
 import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.*;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -74,12 +81,12 @@ public class UserController {
 
     /**
      * Exception to use when denying access to unauthorized users.
-     * 
+     *
      * In general, admins are always authorized, but users cannot modify
      * each other's profiles.
      */
 	@ResponseStatus(
-		value=HttpStatus.FORBIDDEN, 
+		value=HttpStatus.FORBIDDEN,
 		reason="No eres administrador, y éste no es tu perfil")  // 403
 	public static class NoEsTuPerfilException extends RuntimeException {}
 
@@ -89,7 +96,7 @@ public class UserController {
 	 * encodings, since encodings contain a randomly-generated salt.
 	 * @param rawPassword to encode
 	 * @return the encoded password (typically a 60-character string)
-	 * for example, a possible encoding of "test" is 
+	 * for example, a possible encoding of "test" is
 	 * {bcrypt}$2y$12$XCKz0zjXAP6hsFyVc8MucOzx6ER6IsC1qo5zQbclxhddR1t6SfrHm
 	 */
 	public String encodePassword(String rawPassword) {
@@ -125,8 +132,8 @@ public class UserController {
 	@Transactional
 	public String postUser(
 			HttpServletResponse response,
-			@PathVariable long id, 
-			@ModelAttribute User edited, 
+			@PathVariable long id,
+			@ModelAttribute User edited,
 			@RequestParam(required=false) String pass2,
 			Model model, HttpSession session) throws IOException {
 
@@ -141,16 +148,16 @@ public class UserController {
             entityManager.flush(); // forces DB to add user & assign valid id
             id = target.getId();   // retrieve assigned id from DB
         }
-        
+
         // retrieve requested user
         target = entityManager.find(User.class, id);
         model.addAttribute("user", target);
-		
+
 		if (requester.getId() != target.getId() &&
 				! requester.hasRole(Role.ADMIN)) {
 			throw new NoEsTuPerfilException();
 		}
-		
+
 		if (edited.getPassword() != null) {
             if ( ! edited.getPassword().equals(pass2)) {
                 // FIXME: complain
@@ -158,7 +165,7 @@ public class UserController {
                 // save encoded version of password
                 target.setPassword(encodePassword(edited.getPassword()));
             }
-		}		
+		}
 		target.setUsername(edited.getUsername());
 		target.setFirstName(edited.getFirstName());
 		target.setLastName(edited.getLastName());
@@ -169,11 +176,11 @@ public class UserController {
         }
 
 		return "user";
-	}	
+	}
 
     /**
      * Returns the default profile pic
-     * 
+     *
      * @return
      */
     private static InputStream defaultPic() {
@@ -184,7 +191,7 @@ public class UserController {
 
     /**
      * Downloads a profile pic for a user id
-     * 
+     *
      * @param id
      * @return
      * @throws IOException
@@ -199,26 +206,26 @@ public class UserController {
 
     /**
      * Uploads a profile pic for a user id
-     * 
+     *
      * @param id
      * @return
      * @throws IOException
      */
     @PostMapping("{id}/pic")
 	@ResponseBody
-    public String setPic(@RequestParam("photo") MultipartFile photo, @PathVariable long id, 
+    public String setPic(@RequestParam("photo") MultipartFile photo, @PathVariable long id,
         HttpServletResponse response, HttpSession session, Model model) throws IOException {
 
         User target = entityManager.find(User.class, id);
         model.addAttribute("user", target);
-		
+
 		// check permissions
 		User requester = (User)session.getAttribute("u");
 		if (requester.getId() != target.getId() &&
 				! requester.hasRole(Role.ADMIN)) {
             throw new NoEsTuPerfilException();
 		}
-		
+
 		log.info("Updating photo for user {}", id);
 		File f = localData.getFile("user", ""+id+".jpg");
 		if (photo.isEmpty()) {
@@ -236,52 +243,36 @@ public class UserController {
 		}
 		return "{\"status\":\"photo uploaded correctly\"}";
     }
-    
+
 
     /**
      * Returns JSON with all received messages
-     
+	
     @GetMapping(path = "received", produces = "application/json")
 	@Transactional // para no recibir resultados inconsistentes
 	@ResponseBody  // para indicar que no devuelve vista, sino un objeto (jsonizado)
 	public List<Mensaje.Transfer> retrieveMessages(HttpSession session) {
-		long userId = ((User)session.getAttribute("u")).getId();		
-		User u = entityManager.find(User.class, userId);
+		User u = getRequester(session);
+
 		List<Mensaje> mensajes = new ArrayList<Mensaje>();
 
-		//Recorrer todos los partidos en los que participa, buscando mensajes no leidos
+		//Recorrer todos los partidos en los que participa, buscando mensajes no leidos.
+		//Usuario normal solo puede recibir mensajes a traves de chats de partido.
 		for(Juega j: u.getJuega()) {
 			mensajes.addAll(entityManager.createNamedQuery("Mensaje.noLeidos", Mensaje.class)
 			.setParameter("matchId", j.getPartido().getId()).getResultList());
 		}
 
-		log.info("Generating message list for user {} ({} messages)", 
+		if(u.isAdmin()) {
+			mensajes.addAll(null);//unreadREports)
+		}
+
+		log.info("Generating message list for user {} ({} messages)",
 				u.getUsername(), mensajes.size());
 		return  mensajes.stream().map(Transferable::toTransfer).collect(Collectors.toList());
-	}
-	*/
-    
-    /**
-     * Returns JSON with count of unread messages 
-    
-	@GetMapping(path = "unread", produces = "application/json")
-	@ResponseBody
-	public String checkUnread(HttpSession session) {
-		long userId = ((User)session.getAttribute("u")).getId();		
-		User u = entityManager.find(User.class, userId);
-		long unread = 0;
+	}*/
+	
 
-		//Recorrer todos los partidos en los que participa, buscando mensajes no leidos
-		for(Juega j: u.getJuega()) {
-			unread += entityManager.createNamedQuery("Mensaje.countUnread", Long.class)
-			.setParameter("matchId", j.getPartido().getId())
-			.getSingleResult();
-		}
-		
-		session.setAttribute("unread", unread);
-		return "{\"unread\": " + unread + "}";
-    }*/
-    
     /**
      * Posts a message to a match.
      * @param id of target user (source user is from ID)
@@ -291,21 +282,18 @@ public class UserController {
     @PostMapping("/match/{id}/msg")
 	@ResponseBody
 	@Transactional
-	public String postMsg(@PathVariable long id, 
-			@RequestBody JsonNode o, Model model, HttpSession session) 
+	public String postMsg(@PathVariable long id,
+			@RequestBody JsonNode o, Model model, HttpSession session)
 		throws JsonProcessingException {
-		
+
 		String text = o.get("message").asText();
 		Partido p = entityManager.find(Partido.class, id);
 		User sender = entityManager.find(
 				User.class, ((User)session.getAttribute("u")).getId());
-		
-		
+
+
 		//Comprobar que el emisor pertenece al partido o bien es admin
-		boolean pertenece = false;
-		for(Juega j : sender.getJuega()) {
-			if(j.getUser().getId() == sender.getId()) pertenece = true;
-		}
+		boolean pertenece = p.getJuega(sender) != null;
 		if(!pertenece && !sender.hasRole(Role.ADMIN))
 			 throw new IllegalArgumentException("No perteneces al partido y no eres admin");
 
@@ -318,7 +306,7 @@ public class UserController {
 		m.setReport(false);
 		entityManager.persist(m);
 		entityManager.flush(); // to get Id before commit
-		
+
 		ObjectMapper mapper = new ObjectMapper();
 		/*
 		// construye json: método manual
@@ -336,7 +324,7 @@ public class UserController {
 
 		messagingTemplate.convertAndSend("/topic/" + p.getChatToken(), json);
 		return "{\"result\": \"message sent.\"}";
-	}	
+	}
 
 	@GetMapping("/filtermatches")
 	public String filter(Model model) {
@@ -347,6 +335,19 @@ public class UserController {
 	@Transactional
     public String getMatch(@PathVariable long id, Model model, HttpSession session) {
         Partido p = entityManager.find(Partido.class, id);
+		if(p == null) {
+			model.addAttribute("error", "El partido no existe");
+			return "errorAux";
+		}
+
+		User requester = getRequester(session);
+		Juega j = p.getJuega(requester);
+
+		if(j == null && !requester.isAdmin()) {
+			model.addAttribute("error", "No perteneces al partido");
+			return "errorAux";
+		}
+		
         model.addAttribute("partido", p);
 
 		List<Mensaje> mensajes = new ArrayList<Mensaje>();
@@ -354,14 +355,9 @@ public class UserController {
 		for(Mensaje m: p.getMensajes()) {
 			if(!m.isReport()) mensajes.add(m);
 		}
+
 		model.addAttribute("mensajes_chat", mensajes);
-
-		//TODO marcar los mensajes como leidos por ese usuario
-
-		/* 1. Ejecutar named query que tome todos los Leido por ese usuario de este chat
-		 * 2. Iterar sobre todos los mensajes del partido y crear un nuevo leido para cada uno nuevo
-		 */
-		
+		if(j != null) j.setUltimoAcceso(LocalDateTime.now());
         return "chatMatch";
     }
 
@@ -379,8 +375,66 @@ public class UserController {
 	}
 
 	@GetMapping("/crearPartido")
-	public String crearPartido(Model model) {
+	public String crearPartido(@RequestParam(required = false) String deporte, @RequestParam(required = false) Long pistaId, 
+	@RequestParam(required = false) String fecha, Model model) {
+		ArrayList<Court> pistas;
+		if (deporte != null) {
+			model.addAttribute("deporteSeleccionado", deporte);
+
+			pistas = (ArrayList<Court>) entityManager
+				.createNamedQuery("Court.byTipoDeporte", Court.class)
+				.setParameter("deporte", deporte)
+				.getResultList();
+
+			if(pistaId != null && fecha != null){
+				model.addAttribute("pistaSeleccionada", pistaId);
+				model.addAttribute("fechaSeleccionada", fecha);
+
+				//Obtener horas libres
+				model.addAttribute("horasDisponibles", verDisponibilidad(pistaId, fecha));
+				model.addAttribute("mostrarHoras", true);
+			}
+			else {
+				model.addAttribute("mostrarHoras", false);
+			}
+		}
+		else {
+			pistas = (ArrayList<Court>) entityManager
+				.createNamedQuery("Court.allCourt", Court.class)
+				.getResultList();
+		}
+
+		model.addAttribute("pistas", pistas);
+
+
 		return "createMatch";
+	}
+
+	private List<String> verDisponibilidad(Long pistaId, String fecha) {
+		
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		LocalDate date = LocalDate.parse(fecha, formatter); 
+
+		List<String> horasDisponibles = new ArrayList<>();
+
+		List<Integer> horasOcupadas;
+		horasOcupadas = (ArrayList<Integer>) entityManager
+				.createNamedQuery("Partido.horasOcupadas", Integer.class)
+				.setParameter("pistaId", pistaId)
+				.setParameter("fecha", date.atStartOfDay())
+				.setParameter("fechaMasUnDia", date.atStartOfDay().plusDays(1))
+				.getResultList();
+
+		log.info("horasOcupadas {}", horasOcupadas);
+		Court c = entityManager.find(Court.class, pistaId);
+		
+		for(int i = c.getApertura(); i < c.getCierre(); i+=2){
+			if(!horasOcupadas.contains(i)){
+				horasDisponibles.add(String.format("%02d:00", i));
+			}
+		}
+				
+		return horasDisponibles;
 	}
 
 	@PostMapping("/crearPartido")
@@ -388,30 +442,179 @@ public class UserController {
 	public String crearPartido(HttpServletResponse response,
 	@RequestParam("pista") Long idPista,
 	@RequestParam("inicio") String inicio,
-	@RequestParam("fin") String fin,
+	@RequestParam("horaSeleccionada") String horaSeleccionada,
 	Model model, HttpSession session) throws IOException{
 
-        User requester = (User)session.getAttribute("u");
-        Court pista = entityManager.find(Court.class, idPista);
-		if(pista == null) throw new IllegalArgumentException("La pista no existe");
+		User requester = getRequester(session);
 
-		//TODO Comprobar que el horario especificado es valido
+		//Comprobar que la pista existe y tomarla
+        Court pista = entityManager.find(Court.class, idPista);
+		if(pista == null) {
+			model.addAttribute("error", "La pista no existe.");
+			return "errorAux";
+		}
+
+		// Formatear la fecha y la hora
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		LocalDateTime fechaInicio = LocalDateTime.parse(inicio + " " + horaSeleccionada + ":00", formatter);
 		
-		//Crear partido
-		Partido partido = new Partido();
-		partido.setPista(pista);
-		partido.setInicio(LocalDateTime.parse(inicio));
-		partido.setFin(LocalDateTime.parse(fin));
-		partido.setPrivate(false);
-		partido.setChatToken(generateRandomBase64Token(12));
-		entityManager.persist(partido);
+		// Calcular la fecha de fin 
+		LocalDateTime fechaFin = fechaInicio.plusHours(Partido.DURACION_PARTIDOS_HORAS);
+
+		boolean error = false;
+		//Comprobar que no se sobrepasa el dia
+		if(fechaFin.getDayOfYear() != fechaInicio.getDayOfYear() || fechaFin.getYear() != fechaInicio.getYear()) {
+			model.addAttribute("error", "La reserva cubre dos dias o mas, eso no esta permitido");
+			error = true;
+		}
+
+		//Comprobar que la fecha de inicio no es anterior al momento actual
+		if(fechaInicio.isBefore(LocalDateTime.now())) {
+			model.addAttribute("error", "La fecha de inicio no puede ser anterior al momento actual");
+			error = true;
+		}
+
+		//Comprobar que la hora de inicio es anterior a la de fin
+		if(!fechaInicio.isBefore(fechaFin)) {
+			model.addAttribute("error", "La fecha de inicio debe ser anterior a la de fin.");
+			error = true;
+		}
 		
-		//El creador juega en el partido
+		//Comprobar que son horas en punto
+		if(fechaInicio.getMinute() != 0 || fechaInicio.getSecond() != 0 || fechaInicio.getNano() != 0) {
+			model.addAttribute("error", "No se pueden reservar horas que no sean en punto.");
+			error = true;
+		}
+		
+		//Comprobar que el horario es valido para la pista
+		int horaInicioPartido = fechaInicio.getHour();
+		int horaFinPartido = fechaFin.getHour();
+
+		if(horaInicioPartido < pista.getApertura() || horaFinPartido > pista.getCierre()) {
+			model.addAttribute("error", "Horas reservadas no validas para la pista. Horario de la pista: "
+			 + pista.getApertura() + " - " + pista.getCierre());
+
+			error = true;
+		}
+
+		//Comprobar que no hay ya un partido en esa pista a esa hora.
+		Partido conflicto = null;
+		try {
+			conflicto = entityManager
+			.createNamedQuery("Partido.conflicto", Partido.class)
+			.setParameter("courtId", pista.getId())
+			.setParameter("fechaInicio", fechaInicio)
+			.setParameter("fechaFin", fechaFin).getSingleResult();
+		} catch (NoResultException e) { }//Tragarse la excepcion si ocurre porque no ha habido conflictos
+		
+		if(conflicto != null) {
+			model.addAttribute("error", "Ya hay un partido en ese horario en esa pista: " + conflicto.getInicio() + " - " + conflicto.getFin());
+			error = true;
+		} 
+
+		if(error) { return "errorAux"; }
+		else {
+			//Crear partido
+			Partido partido = new Partido();
+			partido.setPista(pista);
+			partido.setInicio(fechaInicio);
+			partido.setFin(fechaFin);
+			partido.setPrivate(false);
+			partido.setChatToken(generateRandomBase64Token(12));
+			entityManager.persist(partido);
+
+			//El creador juega en el partido
+			Juega juega = new Juega();
+			juega.setPartido(partido);
+			juega.setUser(requester);
+			entityManager.persist(juega);
+			entityManager.flush();
+
+			//Hacer que el creador se suscriba al chat del partido
+			suscribirA(session, partido.getChatToken());
+
+			response.sendRedirect("/user/viewMatches");
+			return "viewMatches";
+		}
+	}
+
+	@PostMapping("/joinMatch")
+	@Transactional
+	@ResponseBody
+	public String unirseAPartido(HttpServletResponse response,
+	@RequestBody JsonNode o,
+	Model model, HttpSession session) throws IOException{
+
+		Long idPartido = o.get("idPartido").asLong();
+		User requester = getRequester(session);
+		Partido partido = entityManager.find(Partido.class, idPartido);
+		Integer num_participantes = partido.getJuega().size();
+		
+		//Comprobar que no es admin
+		if(requester.hasRole(User.Role.ADMIN)) {
+			response.setStatus(400);
+			return "Eres administrador";
+		}
+
+		//Comprobar que no pertenece ya al partido
+		if(partido.getJuega(requester) != null) {
+			response.setStatus(400);
+			return "Ya perteneces al partido";
+		}
+
+		//Comprobar que el partido no esta cerrado ni ha terminado
+		if(partido.getEstado().equals(Partido.Estado.CERRADO) ||
+		partido.getEstado().equals(Partido.Estado.TERMINADO)) {
+			response.setStatus(400);
+			return "El partido esta cerrado o ya ha terminado";
+		}
+
+		//Meter al jugador en el partido
 		Juega juega = new Juega();
 		juega.setPartido(partido);
 		juega.setUser(requester);
 		entityManager.persist(juega);
+		entityManager.flush();
 
-		return "admin";
+		num_participantes++;
+
+		//El jugador se suscribe al chat del partido
+		suscribirA(session, partido.getChatToken());
+
+		//Si se ha llegado al maximo de participantes actualizamos el estado del partido a CERRADO
+		if(num_participantes == partido.getPista().getMaxp()) {
+			partido.setEstado(Partido.Estado.CERRADO);
+		}
+
+		return "{\"result\":".concat(num_participantes.toString()).concat( " }");		
+	}
+
+	@GetMapping("/viewMatches")
+	public String viewMatches(Model model) {
+		List<Partido> partidos = entityManager
+			.createNamedQuery("Partido.allPartidos", Partido.class)
+			.getResultList();
+
+		List<Court> pistas = new ArrayList<>();
+		for (Partido partido : partidos) {
+			pistas.add(partido.getPista());
+		}
+
+		model.addAttribute("partidos", partidos);
+		model.addAttribute("pistas", pistas);
+
+		return "viewMatches";
+	}
+
+	private User getRequester(HttpSession session) {
+		User requester = (User)session.getAttribute("u");
+		requester = entityManager.find(User.class, requester.getId());
+		return requester;
+	}
+
+	private void suscribirA(HttpSession session, String chat_token) {
+		String topics = session.getAttribute("topics").toString();
+		topics.concat(",").concat(chat_token);
+		session.setAttribute("topics", topics);
 	}
 }
