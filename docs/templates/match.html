@@ -27,68 +27,22 @@
     <div id="seccionesReserva">
         <!-- Aquí se agregarán dinámicamente las secciones de reserva -->
     </div>
-
-    <section class="reserva" id="reserva">
-        <div class="horario">
-            <p>Mañana | 18:00</p>
-        </div>
-
-        <div class="jugadores">
-            <div class="jugador">
-                <button class="boton" onclick="abrirVentana(this)">+</button>
-                <p>Libre</p>
-            </div>
-            <div class="jugador">
-                <button class="boton" onclick="abrirVentana(this)">+</button>
-                <p>Libre</p>
-            </div>
-            <div class="jugador">
-                <button class="boton" onclick="abrirVentana(this)">+</button>
-                <p>Libre</p>
-            </div>
-            <div class="jugador">
-                <button class="boton" onclick="abrirVentana(this)">+</button>
-                <p>Libre</p>
-            </div>
-        </div>
-
-        <div class="info">
-            <p>Nivel: Intermedio</p>
-            <div class="precio">Precio: 100€</div>
-        </div>
-    </section>
 </main>
 
-<!-- Contenedor para la lista de amigos -->
-<div id="listaAmigos" class="lista-amigos">
-    <!-- Aquí se mostrarán los amigos añadidos al partido -->
-</div>
+<div id="ventanaFlotante" class="ventana-flotante" style="display: none;">
+    <h3>Añadir amigos al partido</h3>
+    <input type="text" placeholder="Buscar amigos">
 
-<section id="ventanaFlotante" style="display: none;">
-    <div class="ventana-flotante">
-        <h3>Añadir amigos al partido</h3>
-        <input type="text" placeholder="Buscar amigos">
-        <div class="amigos">
-            <div class="amigo">
-                <p>User1</p>
-                <button class="boton">+</button>
-            </div>
-            <div class="amigo">
-                <p>User2</p>
-                <button class="boton">+</button>
-            </div>
-            <div class="amigo">
-                <p>User3</p>
-                <button class="boton">+</button>
-            </div>
-        </div>
-        <!-- Contenido de la ventana flotante -->
-        <button onclick="cerrarVentana()">Cerrar</button>
+    <!-- Contenedor para la lista de amigos -->
+    <div id="listaAmigos">
+        <!-- Aquí se mostrarán los amigos añadidos al partido -->
     </div>
 
-    <div class="fondo-oscuro" id="fondoOscuro" onclick="cerrarVentana()"></div>
-</section>
+    <!-- Contenido de la ventana flotante -->
+    <button onclick="cerrarVentana()">Cerrar</button>
+</div>
 
+<div class="fondo-oscuro" id="fondoOscuro" onclick="cerrarVentana()"></div>
 
 </body>
 </html>

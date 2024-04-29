@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Data
 @Table(name = "IWJuega")
@@ -25,6 +27,8 @@ public class Juega {
 
     @ManyToOne
     private User user;
+
+    private LocalDateTime ultimoAcceso;
 
     @OneToMany
     @JoinColumn(name = "rating_id")

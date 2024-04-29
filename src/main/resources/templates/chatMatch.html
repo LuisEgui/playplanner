@@ -49,10 +49,10 @@
 
     <script th:inline="javascript">
         var chat_token = /*[[__${partido.chatToken}__]]*/ "";
+        var idPartido = /*[[__${partido.id}__]]*/ "";
     </script>
     
     <th:block th:replace="fragments/footer.html :: footer" />
-    <script th:src="@{/js/ajax-subscribe-match.js}"></script>
     <script th:src="@{/js/ajax-demo.js}"></script>
 </body>
 </html>

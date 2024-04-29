@@ -47,7 +47,7 @@
                 No hay error
             </div>
             <div class="container-Partidos">
-                <div th:each="partido, stat : ${partidos}" class="card-Partido">
+                <div th:each="partido, stat : ${partidos}" class="card-Partido partido">
                     <div class="info-Partido">
                         <h5 th:text="${partido.pista.nombre}"></h5>
                         <p><strong>Dirección:</strong> <span th:text="${partido.pista.localizacion}"></span> <br>
@@ -55,6 +55,17 @@
                             <strong>Fecha:</strong> <span th:text="${#temporals.format(partido.inicio,'dd-MM-yyyy')}"></span><br>
                             <strong>Hora:</strong> <span th:text="${#temporals.format(partido.inicio,'HH:mm')}"></span> - 
                                                     <span th:text="${#temporals.format(partido.fin,'HH:mm')}"></span><br>
+                          <strong class="num-participantes">Numero actual de participantes: <td th:text="${partido.juega.size}"></td></strong><br>
+                            <strong>Numero maximo de participantes: <td th:text="${partido.pista.maxp}"></td></strong>
+
+                            <form method="POST" th:action="@{/user/joinMatch}" class="form-unirse">
+                                <input hidden type="text" class="idPartido btn btn-outline-dark" name="idPartido" th:value="${partido.id}">
+                                <button type="submit" class="unirse-btn"> Unirse </button>
+                            </form>
+
+                            <div>
+                                <a class="link" th:href="@{/user/match/{id}(id=${partido.id})}"> Ir al chat del partido </a>
+                            </div>
                         </p>
                     </div>
                     <input class="btn btn-outline-dark" type="button" value="Unirse" th:attr="data-id=${partido.id}">                
@@ -64,6 +75,7 @@
     </main>
 
     <th:block th:replace="fragments/footer.html :: footer" />
+    <script th:src="@{/js/joinMatch.js}"></script>
 </body>
 
 </html>

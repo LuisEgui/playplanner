@@ -29,6 +29,7 @@ import java.util.List;
                 query="SELECT c FROM Court c "
                         + "WHERE c.id = :pistaId")
 })
+
 @Table(name="IWCourt")
 public class Court {
     @Id
@@ -39,11 +40,24 @@ public class Court {
     private String nombre;
     private String tipo;
     private String localizacion;
+  
     //Cambiado a String temporalmente
     private int apertura;
     private int cierre;
+  
+    private String localidad;
 
+    private int apertura;
+    private int cierre;
+
+    private int maxp;
+
+    //@OneToMany(mappedBy = "court")
     @OneToMany
     @JoinColumn(name = "partido_id")
     List<Partido> partido = new ArrayList<>();
+
+    public Court() {
+        this.partido = new ArrayList<Partido>();
+    }
 }
