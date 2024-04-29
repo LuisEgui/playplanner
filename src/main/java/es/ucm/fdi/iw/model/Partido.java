@@ -22,14 +22,14 @@ import java.util.List;
             + "AND p.inicio < :fechaMasUnDia"),
     @NamedQuery(name="Partido.allPartidos",
             query="SELECT p FROM Partido p "
-            + "WHERE p.estado = 'PREPARANDO'"),
+            + "WHERE p.estado = 0"),
     @NamedQuery(name="Partido.filtrar",
             query="SELECT p FROM Partido p "
             + "WHERE (:deporte IS NULL OR p.pista.tipo = :deporte) "
             + "AND (:localizacion IS NULL OR p.pista.localizacion = :localizacion) "
             + "AND (:fechaInicio IS NULL OR p.inicio >= :fechaInicio) "
             + "AND (:fechaFin IS NULL OR p.fin <= :fechaFin) "
-            + "AND (p.estado = 'PREPARANDO')"),
+            + "AND (p.estado = 0)"),
     @NamedQuery(name="Partido.ganados",
             query="SELECT COUNT(p) FROM Partido p "
             + "JOIN p.juega j "
@@ -46,7 +46,7 @@ import java.util.List;
             query="SELECT p FROM Partido p "
             + "JOIN p.juega j "
             + "JOIN j.user u "
-            + "WHERE p.estado = 'TERMINADO' "
+            + "WHERE p.estado = 2 "
             + "AND u.id = :idUser"),
 	@NamedQuery(name="Partido.conflicto",
 	query="SELECT p FROM Partido p WHERE p.pista.id = :courtId " +
@@ -94,8 +94,6 @@ public class Partido {
     private String result;
 
     private boolean isPrivate;
-
-    private String estado;
 
     private String chatToken;
 

@@ -577,7 +577,7 @@ public class UserController {
 			partido.setInicio(fechaInicio);
 			partido.setFin(fechaFin);
 			partido.setPrivate(false);
-      partido.setEstado("PREPARANDO");
+      		partido.setEstado(Partido.Estado.PREPARANDO);
 			partido.setChatToken(generateRandomBase64Token(12));
 			entityManager.persist(partido);
 

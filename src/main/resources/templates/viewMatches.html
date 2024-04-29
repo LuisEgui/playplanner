@@ -59,8 +59,8 @@
                             <strong>Numero maximo de participantes: <td th:text="${partido.pista.maxp}"></td></strong>
 
                             <form method="POST" th:action="@{/user/joinMatch}" class="form-unirse">
-                                <input hidden type="text" class="idPartido btn btn-outline-dark" name="idPartido" th:value="${partido.id}">
-                                <button type="submit" class="unirse-btn"> Unirse </button>
+                                <input hidden type="text" class="idPartido" name="idPartido" th:value="${partido.id}">
+                                <button type="submit" class=" btn btn-outline-dark unirse-btn"> Unirse </button>
                             </form>
 
                             <div>
@@ -68,7 +68,6 @@
                             </div>
                         </p>
                     </div>
-                    <input class="btn btn-outline-dark" type="button" value="Unirse" th:attr="data-id=${partido.id}">                
                 </div>
             </div>
         </div>

@@ -47,9 +47,6 @@ public class Court {
   
     private String localidad;
 
-    private int apertura;
-    private int cierre;
-
     private int maxp;
 
     //@OneToMany(mappedBy = "court")
