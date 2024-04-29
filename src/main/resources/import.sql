@@ -6,9 +6,9 @@ INSERT INTO IWUser (id, enabled, roles, username, password)
 VALUES (2, TRUE, 'USER', 'b',
     '{bcrypt}$2a$10$2BpNTbrsarbHjNsUWgzfNubJqBRf.0Vz9924nRSHBqlbPKerkgX.W');
 
-INSERT INTO IWUser (id, enabled, roles, username, password)
+INSERT INTO IWUser (id, enabled, roles, username, password, firstName, lastName)
 VALUES (3, TRUE, 'USER', 'c',
-    '{bcrypt}$2a$10$2BpNTbrsarbHjNsUWgzfNubJqBRf.0Vz9924nRSHBqlbPKerkgX.W');
+    '{bcrypt}$2a$10$2BpNTbrsarbHjNsUWgzfNubJqBRf.0Vz9924nRSHBqlbPKerkgX.W', Lia, Carvajal);
 
 INSERT INTO IWUser (id, enabled, roles, username, password)
 VALUES (4, TRUE, 'USER', 'd',
@@ -17,7 +17,6 @@ VALUES (4, TRUE, 'USER', 'd',
 INSERT INTO IWUser (id, enabled, roles, username, password)
 VALUES (5, TRUE, 'USER', 'e',
     '{bcrypt}$2a$10$2BpNTbrsarbHjNsUWgzfNubJqBRf.0Vz9924nRSHBqlbPKerkgX.W');
-
 
 INSERT INTO IWCourt (id, nombre, localizacion, apertura, cierre, tipo, maxp)
 VALUES (1, 'Cancha baloncesto San Pol de Mar', 'Calle de San Pol de Mar, 11', 8, 20, 'Baloncesto', 10);
@@ -38,6 +37,7 @@ INSERT INTO Partido (id, inicio, fin, is_private, pista_id, chat_token, estado) 
 INSERT INTO IWJUEGA (id, partido_id, user_id) VALUES (1, 1, 2);
 INSERT INTO IWJUEGA (id, partido_id, user_id) VALUES (2, 1, 3);
 INSERT INTO IWJUEGA (id, partido_id, user_id) VALUES (3, 1, 4);
+INSERT INTO IWJUEGA (id, partido_id, user_id) VALUES (4, 4, 2);
 
 -- Mensajes de chat
 INSERT INTO Mensaje (id, date_read, date_sent, is_report, texto, partido_id, recipient_id, sender_id)

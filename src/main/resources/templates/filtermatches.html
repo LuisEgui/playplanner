@@ -6,7 +6,13 @@
     <th:block th:replace="fragments/head :: header" />
     <title>IW: Filtrar partidos</title>
 </head>
-
+<script>
+    window.onload = function() {
+        let fecha = document.querySelector("#fecha");
+        let hoy = new Date().toISOString().split('T')[0];
+        fecha.setAttribute('min', hoy);
+    };
+</script>
 <body class="d-flex flex-column h-100">
     <header th:replace="fragments/nav.html :: nav"></header>
 
@@ -15,26 +21,29 @@
             <h1> Busca partidos que te interesen! </h1>
             <hr>
     
-            <form class="form-filter">
+            <form method="POST" class="form-filter" th:action="@{/user/filtermatches}">
                 <label for="fecha"> Fecha: </label>
-                <input type="date" id="fecha">
+                <input type="date" name="fecha" id="fecha" required>
                 <hr>
 
                 <label for="hora-inicio"> Disponibilidad desde </label>
-                <input type="time" id="hora-inicio">
+                <input type="time" name="hora-inicio" id="hora-inicio" required>
                 <label for="hora-fin">  hasta </label>
-                <input type="time" id="hora-fin">
+                <input type="time" name="hora-fin" id="hora-fin" required>
                 <hr>
 
                 <label for="deporte"> Deporte: </label>
-                <select id="deporte">
+                <select name="deporte" id="deporte" required>
                     <option>Baloncesto</option>
-                    <option>Fútbol</option>
+                    <option>Tenis</option>
                 </select>
                 <hr>
 
-                <label for="localidad"> Localidad: </label>
-                <input type="text" id="localidad">
+                <label for="localizacion">Pista: </label>
+                <select name="localizacion" id="localizacion" required>
+                    <option value="">--Por favor seleccione una localización--</option>
+                    <option th:each="pista : ${pistas}" th:value="${pista.localizacion}" th:text="${pista.localizacion}"></option>
+                </select>
                 <hr>
 
                 <input id="buscarPartido" class="btn btn-outline-dark" type="submit" value="Buscar">

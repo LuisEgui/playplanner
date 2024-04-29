@@ -12,43 +12,54 @@
 <body class="d-flex flex-column h-100">
     <header th:replace="fragments/nav.html :: nav"></header>
 
-    <div class="container-user">
-        <div class="profile">
-            <img th:src="@{/img/perfil.png}" alt="Foto de perfil">
-            <h1><span th:text="${user.username}"></span></h1>
-        </div>
-      
-        <div class="info">
-            <p>5 <em>partidos jugados</em></p>
-            <p>10 <em>seguidores</em></p>
-            <p>8 <em>seguidos</em></p>
-            <button>Editar perfil</button>
-    
-            <div class="sport-btn">
-                <button id="btn1">Fútbol</button>
-                <button id="btn2">Basket</button>
-            </div>
-        </div>
-        
-        <div class="nivel">
-            <h1>Nivel 0,95</h1>
-            <h2> Historial de partidos:</h2>
-        </div>  
-
+    <div class="flex-shrink-0">
         <div class="container">
-            <h1 class="mt-5">Perfil de <span th:text="${user.username}">Paco</span></h1>
-            <!-- recepción de mensajes -->
-            <div class="py-5 row" id="mensajes">
+
+            <div class="info-user">
+                <div class="profile">
+                    <img th:src="@{/img/perfil.png}" alt="Foto de perfil">
+                    <h1><span th:text="${user.username}"></span></h1>
+                
+                    <p><span th:text="${ganados}"></span><em><br> partidos<br> ganados</em></p>
+                    <p><span th:text="${perdidos}"></span><em><br> partidos<br> perdidos</em></p>
+                </div> 
+                <h5><span th:text="${user.firstName}"></span> <span th:text="${user.lastName}"></span></h5>
             </div>
-            <!-- envío de mensajes -->
-            <div class="py-5 row ">
-                <form th:action="@{/user/__${user.id}__/msg}" method="POST">
-                    <input type="text" id="message" placeholder="escribe a este usuario" />
-                    <button id="sendmsg" class="btn btn-secondary" type="submit">Enviar</button>
-                </form>
+            <br><hr>
+            <div class="historial-user">
+                <h4>Partidos jugados</h4>
+                <div class="container-Partidos">
+                    <div th:each="partido, stat : ${partidosJugados}" class="card-Partido">
+                        <div class="info-Partido">
+                            <h5 th:text="${partido.pista.nombre}"></h5>
+                            <p>
+                                <strong>Dirección:</strong> <span th:text="${partido.pista.localizacion}"></span> <br>
+                                <strong>Deporte:</strong> <span th:text="${partido.pista.tipo}"></span><br>
+                                <strong>Fecha:</strong> <span th:text="${#temporals.format(partido.inicio,'dd-MM-yyyy')}"></span><br>
+                                <strong>Hora:</strong> <span th:text="${#temporals.format(partido.inicio,'HH:mm')}"></span> - 
+                                                    <span th:text="${#temporals.format(partido.fin,'HH:mm')}"></span><br>
+                                <strong>Resultado:</strong> <span th:text="${partido.result}"></span><br>
+
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container-chat">
+                <h1 class="mt-5">Perfil de <span th:text="${user.username}">Paco</span></h1>
+                <!-- recepción de mensajes -->
+                <div class="py-5 row" id="mensajes">
+                </div>
+                <!-- envío de mensajes -->
+                <div class="py-5 row ">
+                    <form th:action="@{/user/__${user.id}__/msg}" method="POST">
+                        <input type="text" id="message" placeholder="escribe a este usuario" />
+                        <button id="sendmsg" class="btn btn-secondary" type="submit">Enviar</button>
+                    </form>
+                </div>
             </div>
         </div>
-        
     </div>
     
     <th:block th:replace="fragments/footer.html :: footer" />
