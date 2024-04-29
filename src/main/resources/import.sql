@@ -6,9 +6,9 @@ INSERT INTO IWUser (id, enabled, roles, username, password)
 VALUES (2, TRUE, 'USER', 'b',
     '{bcrypt}$2a$10$2BpNTbrsarbHjNsUWgzfNubJqBRf.0Vz9924nRSHBqlbPKerkgX.W');
 
-INSERT INTO IWUser (id, enabled, roles, username, password)
+INSERT INTO IWUser (id, enabled, roles, username, password, firstName, lastName)
 VALUES (3, TRUE, 'USER', 'c',
-    '{bcrypt}$2a$10$2BpNTbrsarbHjNsUWgzfNubJqBRf.0Vz9924nRSHBqlbPKerkgX.W');
+    '{bcrypt}$2a$10$2BpNTbrsarbHjNsUWgzfNubJqBRf.0Vz9924nRSHBqlbPKerkgX.W', Lia, Carvajal);
 
 INSERT INTO IWUser (id, enabled, roles, username, password)
 VALUES (4, TRUE, 'USER', 'd',
@@ -31,13 +31,23 @@ VALUES (3, 'Cancha baloncesto Parque de la Paz', 'Parque de la Paz, C. la Paz, 4
 INSERT INTO IWCourt (id, nombre, localizacion, apertura, cierre, tipo)
 VALUES (4, 'Pista central tenis, Club de Campo Villa de Madrid', 'Moncloa - Aravaca, 28040 Madrid', 8, 20, 'Tenis');
 
-INSERT INTO Partido (id, fin, inicio, is_private, pista_id, chat_token) 
-VALUES (1, '2024-11-11T10:00', '2024-11-11T08:00', false, 1, 'XhbWy-uPBI1N81IT');
+INSERT INTO Partido (id, fin, inicio, is_private, pista_id, chat_token, result, estado) 
+VALUES (1, '2024-04-24T10:00', '2024-04-24T08:00', false, 1, 'XhbWy-uPBI1N81IT', 'GANADO', 'TERMINADO');
+
+INSERT INTO Partido (id, fin, inicio, is_private, pista_id, chat_token, result, estado) 
+VALUES (2, '2024-04-24T12:00', '2024-04-24T10:00', false, 1, 'XhbWy-uPBI1N81IT', '', 'PREPARANDO');
+
+INSERT INTO Partido (id, fin, inicio, is_private, pista_id, chat_token, result, estado) 
+VALUES (3, '2024-04-24T14:00', '2024-04-24T12:00', false, 1, 'XhbWy-uPBI1N81IT', '', 'CERRADO');
+
+INSERT INTO Partido (id, fin, inicio, is_private, pista_id, chat_token, result, estado) 
+VALUES (4, '2024-04-24T14:00', '2024-04-24T12:00', false, 2, 'XhbWy-uPBI1N81IT', 'GANADO', 'TERMINADO');
 
 --Participaciones en partido
 INSERT INTO IWJUEGA (id, partido_id, user_id) VALUES (1, 1, 2);
 INSERT INTO IWJUEGA (id, partido_id, user_id) VALUES (2, 1, 3);
 INSERT INTO IWJUEGA (id, partido_id, user_id) VALUES (3, 1, 4);
+INSERT INTO IWJUEGA (id, partido_id, user_id) VALUES (4, 4, 2);
 
 -- Mensajes de chat
 INSERT INTO Mensaje (id, date_read, date_sent, is_report, texto, partido_id, recipient_id, sender_id)

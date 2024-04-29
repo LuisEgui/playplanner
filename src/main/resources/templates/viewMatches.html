@@ -43,13 +43,15 @@
         <div class="container">
             <h1> Partidos disponibles </h1>
             <hr>
-
+            <div th:if="${error}" th:text="${error}">
+                No hay error
+            </div>
             <div class="container-Partidos">
                 <div th:each="partido, stat : ${partidos}" class="card-Partido">
                     <div class="info-Partido">
-                        <h5 th:text="${pistas[stat.index].nombre}"></h5>
-                        <p><strong>Dirección:</strong> <span th:text="${pistas[stat.index].localizacion}"></span> <br>
-                            <strong>Deporte:</strong> <span th:text="${pistas[stat.index].tipo}"></span><br>
+                        <h5 th:text="${partido.pista.nombre}"></h5>
+                        <p><strong>Dirección:</strong> <span th:text="${partido.pista.localizacion}"></span> <br>
+                            <strong>Deporte:</strong> <span th:text="${partido.pista.tipo}"></span><br>
                             <strong>Fecha:</strong> <span th:text="${#temporals.format(partido.inicio,'dd-MM-yyyy')}"></span><br>
                             <strong>Hora:</strong> <span th:text="${#temporals.format(partido.inicio,'HH:mm')}"></span> - 
                                                     <span th:text="${#temporals.format(partido.fin,'HH:mm')}"></span><br>

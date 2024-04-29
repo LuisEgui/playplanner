@@ -27,7 +27,7 @@ import java.util.List;
                 query="SELECT c FROM Court c"),
         @NamedQuery(name="Court.byId",
                 query="SELECT c FROM Court c "
-                        + "WHERE c.id = :partidoId")
+                        + "WHERE c.id = :pistaId")
 })
 @Table(name="IWCourt")
 public class Court {

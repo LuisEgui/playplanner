@@ -119,6 +119,27 @@ public class UserController {
     public String index(@PathVariable long id, Model model, HttpSession session) {
         User target = entityManager.find(User.class, id);
         model.addAttribute("user", target);
+
+		Long ganados = (Long) entityManager
+					.createNamedQuery("Partido.ganados", Long.class)
+					.setParameter("idUser", id)
+					.getSingleResult();
+
+		Long perdidos = (Long) entityManager
+					.createNamedQuery("Partido.perdidos", Long.class)
+					.setParameter("idUser", id)
+					.getSingleResult();
+
+		model.addAttribute("ganados", ganados);
+		model.addAttribute("perdidos", perdidos);
+
+		ArrayList<Partido> partidosJugados = (ArrayList<Partido>) entityManager
+					.createNamedQuery("Partido.byUser", Partido.class)
+					.setParameter("idUser", id)
+					.getResultList();
+	
+		model.addAttribute("partidosJugados", partidosJugados);
+
         return "user";
     }
 
@@ -344,7 +365,43 @@ public class UserController {
 
 	@GetMapping("/filtermatches")
 	public String filter(Model model) {
+		ArrayList<Court> pistas = (ArrayList<Court>) entityManager
+				.createNamedQuery("Court.allCourt", Court.class)
+				.getResultList();
+		
+		model.addAttribute("pistas", pistas);
+
 		return "filtermatches";
+	}
+
+	@PostMapping("/filtermatches")
+	@Transactional
+	public String filter(HttpServletResponse response, @RequestParam("fecha") String fecha,
+		@RequestParam("hora-inicio") String horaInicio, @RequestParam("hora-fin") String horaFin, 
+		@RequestParam("deporte") String deporte, @RequestParam("localizacion") String localizacion, 
+		Model model, HttpSession session) throws IOException {
+		
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		LocalDateTime fechaInicio = LocalDateTime.parse(fecha + " " + horaInicio + ":00", formatter);
+		LocalDateTime fechaFin = LocalDateTime.parse(fecha + " " + horaFin + ":00", formatter);
+		
+		ArrayList<Partido> partidosFiltrados = (ArrayList<Partido>) entityManager
+										.createNamedQuery("Partido.filtrar", Partido.class)
+										.setParameter("deporte", deporte)
+										.setParameter("localizacion", localizacion)
+										.setParameter("fechaInicio", fechaInicio)
+										.setParameter("fechaFin", fechaFin)
+										.getResultList();
+
+		if(!partidosFiltrados.isEmpty()){
+			model.addAttribute("partidos", partidosFiltrados);
+		}
+		else{
+			model.addAttribute("error", "No encontramos partidos con esos filtros!! :(");
+		}
+		model.addAttribute("filtrado", true);
+
+		return viewMatches(model);
 	}
 
 	@GetMapping("/match/{id}")
@@ -414,7 +471,6 @@ public class UserController {
 
 		model.addAttribute("pistas", pistas);
 
-
 		return "createMatch";
 	}
 
@@ -469,6 +525,10 @@ public class UserController {
 		LocalDateTime fechaFin = fechaInicio.plusHours(2);
 		partido.setFin(fechaFin);
 
+		//NUEVO
+		partido.setEstado("PREPARANDO");
+		//NUEVO 
+
 		partido.setPrivate(false);
 		partido.setChatToken(generateRandomBase64Token(12));
 		entityManager.persist(partido);
@@ -485,17 +545,18 @@ public class UserController {
 
 	@GetMapping("/viewMatches")
 	public String viewMatches(Model model) {
-		List<Partido> partidos = entityManager
+
+		Boolean filtrado = (Boolean) model.getAttribute("filtrado");
+    	if (filtrado == null || !filtrado) {
+			List<Partido> partidos = entityManager
 			.createNamedQuery("Partido.allPartidos", Partido.class)
 			.getResultList();
 
-		List<Court> pistas = new ArrayList<>();
-		for (Partido partido : partidos) {
-			pistas.add(partido.getPista());
+			model.addAttribute("partidos", partidos);
 		}
-
-		model.addAttribute("partidos", partidos);
-		model.addAttribute("pistas", pistas);
+		else{
+			model.addAttribute("filtrado", false);
+		}
 
 		return "viewMatches";
 	}

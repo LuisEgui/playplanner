@@ -5,29 +5,31 @@
     <th:block th:replace="fragments/head :: header" />
     <title>IW: Crear partido</title>
     <script>
+        window.onload = function() {
+            let fecha = document.querySelector("#inicio");
+            let hoy = new Date().toISOString().split('T')[0];
+            fecha.setAttribute('min', hoy);
+        };
+
         function updatePistas(deporte) {
             window.location.href = '/user/crearPartido?deporte=' + deporte;
         }
 
-        function verDisponibilidad(pistaId, fecha) {
-            var deporte = document.querySelector('input[name="deporte"]:checked').value;
-            window.location.href = '/user/crearPartido?deporte=' + deporte + '&pistaId=' + pistaId + '&fecha=' + fecha;
+        function verDisponibilidad() {
+            var deporte = document.querySelector('input[name="deporte"]:checked');
+            var pistaId = document.querySelector('select[name="pista"]');
+            var fecha = document.querySelector('input[name="inicio"]');
+
+            if (deporte && pistaId.value && fecha.value) {
+                deporte = deporte.value;
+                pistaId = pistaId.value;
+                fecha = fecha.value;
+                window.location.href = '/user/crearPartido?deporte=' + deporte + '&pistaId=' + pistaId + '&fecha=' + fecha;
+            } else {
+                alert("Por favor, rellena todos los campos antes de verificar la disponibilidad.");
+            }
         }
 
-        // Evento de cambio para el elemento de selección de pista
-        document.getElementById('pista').addEventListener('change', function() {
-            localStorage.setItem('pista', this.value);
-        });
-
-        // Evento de cambio para el elemento de entrada de fecha
-        document.getElementById('inicio').addEventListener('change', function() {
-            localStorage.setItem('fecha', this.value);
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            var today = new Date().toISOString().split('T')[0];
-            document.getElementById('inicio').setAttribute('min', today);
-        });
     </script>
 </head>
 
@@ -49,7 +51,7 @@
                 <label for="pista">Pista: </label>
                 <select name="pista" id="pista" required>
                     <option value="">--Por favor seleccione una pista--</option>
-                    <option th:each="pista : ${pistas}" th:value="${pista.id}" th:text="${pista.nombre}" th:selected="${pista.id == pistaSeleccionada}"></option>
+                    <option th:each="pista : ${pistas}" th:value="${pista.id}" th:text="${pista.nombre}"  th:selected="${pista.id == pistaSeleccionada}"></option>
                 </select>
                 <hr>
                 
@@ -57,7 +59,7 @@
                 <input type="date" name="inicio" id="inicio" required th:value="${fechaSeleccionada}">
                 <hr>
 
-                <input class="btn btn-outline-dark" type="button" value="Ver disponibilidad" id="ver" onclick="verDisponibilidad(document.getElementById('pista').value, document.getElementById('inicio').value)">                
+                <input class="btn btn-outline-dark" type="button" value="Ver disponibilidad" id="ver" onclick="verDisponibilidad()">                
                 <div th:if="${mostrarHoras}">
                     <br>
                     <div th:each="hora : ${horasDisponibles}">
