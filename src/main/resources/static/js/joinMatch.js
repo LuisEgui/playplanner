@@ -1,4 +1,3 @@
-//Click en banear usuario
 document.addEventListener("DOMContentLoaded", () => {
     let partidos = document.getElementsByClassName("partido");
 

@@ -21,7 +21,7 @@
                     <tr th:each="mensaje: ${mensajes_chat}">
                         <div>
                             <th:block th:text="${mensaje.sender.username}"></th:block>
-                            @<th:block th:text="${mensaje.dateSent}"></th:block> 
+                            @<th:block th:text="${#temporals.format(mensaje.dateSent,'yyyy-MM-dd HH:mm')}"></th:block> 
                             <th:block th:text="${mensaje.texto}"></th:block>
                         </div>
                     </tr>

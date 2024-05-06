@@ -55,6 +55,8 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  *  User management.
@@ -664,6 +666,53 @@ public class UserController {
 		return "viewMatches";
 	}
 
+	@GetMapping(path = "unread", produces = "application/json")
+	@Transactional // para no recibir resultados inconsistentes
+	@ResponseBody  // para indicar que no devuelve vista, sino un objeto (jsonizado)
+
+	public String unread(HttpSession session) {
+		User u = getRequester(session);
+		long unread = noLeidos(u).size();
+		session.setAttribute("unread", unread);
+		return "{\"unread\": " + unread + "}";
+	}
+
+	@GetMapping("/chatsNoLeidos")
+	@Transactional
+    public String chatsNoLeidos(Model model, HttpSession session) {
+		User u = getRequester(session);
+		List<Mensaje> lista = noLeidos(u);
+		Map<Long, Integer> mapa = new HashMap<Long, Integer>();
+		for(Mensaje m: lista) {
+				Long idPartido = m.getPartido().getId();
+				Integer v = mapa.get(idPartido);
+
+				if(v == null) mapa.put(idPartido, 1);
+				else mapa.put(idPartido, v + 1);
+		}
+		model.addAttribute("chats", mapa.entrySet());
+		return "chatsNoLeidos";
+    }
+
+       private List<Mensaje> noLeidos(User u) {
+		List<Mensaje> resultado;
+
+		if(u.isAdmin()) {
+				resultado = entityManager.createNamedQuery("Mensaje.noLeidosReportes", Mensaje.class).getResultList();
+		} else {
+				resultado = new ArrayList<Mensaje>();
+				//Recorrer todos los partidos en los que participa, buscando mensajes no leidos.
+				//Usuario normal solo puede recibir mensajes a traves de chats de partido.
+				for(Juega j: u.getJuega()) {
+						resultado.addAll(entityManager.createNamedQuery("Mensaje.noLeidosChats", Mensaje.class)
+						.setParameter("fechaUltimoAcceso", j.getUltimoAcceso()).setParameter("partidoId", j.getPartido().getId()).getResultList());
+				}
+		}
+
+		return resultado;
+    }
+
+
 	private User getRequester(HttpSession session) {
 		User requester = (User)session.getAttribute("u");
 		requester = entityManager.find(User.class, requester.getId());
@@ -672,7 +721,7 @@ public class UserController {
 
 	private void suscribirA(HttpSession session, String chat_token) {
 		String topics = session.getAttribute("topics").toString();
-		topics.concat(",").concat(chat_token);
+        topics = topics.concat(",/topic/").concat(chat_token);
 		session.setAttribute("topics", topics);
 	}
 }

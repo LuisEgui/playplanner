@@ -57,6 +57,11 @@
                                 <div>
                                     <a class="link" th:href="@{/user/match/{id}(id=${report.partido.id})}"> Ir al chat del partido </a>
                                 </div>
+
+                                <form method="POST" th:action="@{/admin/marcarLeido}" class="form-marcar-leido">
+                                    <input hidden type="text" class="idPartido btn btn-outline-dark idMsj" name="idMsj" th:value="${report.id}">
+                                    <button type="submit" class="marcar-leido-btn"> Marcar como procesado </button>
+                                </form>
                                 <hr>
                             </tr>
                         </div>
