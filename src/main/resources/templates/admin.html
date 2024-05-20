@@ -47,10 +47,9 @@
                             <h3>Reportes</h3>
                         </div>
 
-
                         <div class="modal-body">
                             <tr th:each="report: ${reports}">
-                                <h4>Reporte enviado por <td th:text="${report.sender.username}"></td></h4>
+                                <h4>Reporte enviado por <td th:text="${report.sender.username}"></td> sobre <td th:text="${report.recipient.username}"></td></h4>
                                 <h5>Enviado en partido #<td th:text="${report.partido.id}"></td></h5>
                                 <td th:text="${report.texto}"></td>
 

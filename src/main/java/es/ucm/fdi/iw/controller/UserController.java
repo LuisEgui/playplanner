@@ -267,35 +267,6 @@ public class UserController {
 		return "{\"status\":\"photo uploaded correctly\"}";
     }
 
-
-    /**
-     * Returns JSON with all received messages
-	
-    @GetMapping(path = "received", produces = "application/json")
-	@Transactional // para no recibir resultados inconsistentes
-	@ResponseBody  // para indicar que no devuelve vista, sino un objeto (jsonizado)
-	public List<Mensaje.Transfer> retrieveMessages(HttpSession session) {
-		User u = getRequester(session);
-
-		List<Mensaje> mensajes = new ArrayList<Mensaje>();
-
-		//Recorrer todos los partidos en los que participa, buscando mensajes no leidos.
-		//Usuario normal solo puede recibir mensajes a traves de chats de partido.
-		for(Juega j: u.getJuega()) {
-			mensajes.addAll(entityManager.createNamedQuery("Mensaje.noLeidos", Mensaje.class)
-			.setParameter("matchId", j.getPartido().getId()).getResultList());
-		}
-
-		if(u.isAdmin()) {
-			mensajes.addAll(null);//unreadREports)
-		}
-
-		log.info("Generating message list for user {} ({} messages)",
-				u.getUsername(), mensajes.size());
-		return  mensajes.stream().map(Transferable::toTransfer).collect(Collectors.toList());
-	}*/
-	
-
     /**
      * Posts a message to a match.
      * @param id of target user (source user is from ID)
@@ -400,6 +371,7 @@ public class UserController {
 		}
 
 		User requester = getRequester(session);
+		model.addAttribute("u", requester);
 		Juega j = p.getJuega(requester);
 
 		if(j == null && !requester.isAdmin()) {
@@ -649,6 +621,50 @@ public class UserController {
 		return "{\"result\":".concat(num_participantes.toString()).concat( " }");		
 	}
 
+	@PostMapping("/report")
+	@Transactional
+	public String reportar(HttpServletResponse response, 
+	@RequestParam("idPartido") Long idPartido, 
+	@RequestParam("mensaje") String mensaje,
+	@RequestParam("idReportado") Long idUsuarioReportado,
+	Model model, HttpSession session) throws IOException{
+
+		User requester = getRequester(session);
+		Partido partido = entityManager.find(Partido.class, idPartido);
+		log.info("El reportado es " + idUsuarioReportado);
+		User reportado = entityManager.find(User.class, idUsuarioReportado);
+		
+		//Comprobar que el reportado no es admin
+		if(reportado.hasRole(User.Role.ADMIN)) {
+			model.addAttribute("error", "No puedes reportar al administrador");
+			return "errorAux";
+		}
+
+		//Comprobar que ambos pertenecen al partido
+		if(partido.getJuega(requester) == null) {
+			model.addAttribute("error", "No perteneces al partido");
+			return "errorAux";
+		}
+
+		if(partido.getJuega(reportado) == null) {
+			model.addAttribute("error", "El usuario reportado no pertenece al partido");
+			return "errorAux";
+		}
+
+		//Crear reporte
+		Mensaje reporte = new Mensaje();
+		reporte.setDateSent(LocalDateTime.now());
+		reporte.setPartido(partido);
+		reporte.setSender(requester);
+		reporte.setRecipient(reportado);
+		reporte.setTexto(mensaje);
+		reporte.setReport(true);
+		entityManager.persist(reporte);
+
+		response.sendRedirect("/user/match/" + idPartido);
+		return getMatch(idPartido, model, session);
+	}
+
 	@GetMapping("/viewMatches")
 	public String viewMatches(Model model) {
 		Boolean filtrado = (Boolean) model.getAttribute("filtrado");
@@ -669,7 +685,6 @@ public class UserController {
 	@GetMapping(path = "unread", produces = "application/json")
 	@Transactional // para no recibir resultados inconsistentes
 	@ResponseBody  // para indicar que no devuelve vista, sino un objeto (jsonizado)
-
 	public String unread(HttpSession session) {
 		User u = getRequester(session);
 		long unread = noLeidos(u).size();
@@ -691,6 +706,7 @@ public class UserController {
 				else mapa.put(idPartido, v + 1);
 		}
 		model.addAttribute("chats", mapa.entrySet());
+		model.addAttribute("isAdmin", u.isAdmin());
 		return "chatsNoLeidos";
     }
 
@@ -711,6 +727,25 @@ public class UserController {
 
 		return resultado;
     }
+
+	private String finalizarPartido(HttpServletResponse response, Model model, HttpSession session) {
+
+		boolean pertenecenAPartido = true;
+		Partido p = null;
+		List<User> equipoA = null;
+		List<User> equipoB = null;
+		List<User> todos = null;
+
+		for(User u: todos) {
+			if(p.getJuega(u) == null) pertenecenAPartido = false;
+		}
+
+		if(Math.abs(equipoA.size() - equipoB.size()) > 1) {
+			return "Equipos desiguales ";
+		}
+
+		return "";
+	}
 
 
 	private User getRequester(HttpSession session) {

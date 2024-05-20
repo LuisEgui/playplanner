@@ -19,7 +19,7 @@ b.onclick = (e) => {
 // cómo pintar 1 mensaje (devuelve html que se puede insertar en un div)
 function renderMsg(msg) {
     console.log("rendering: ", msg);
-    return `<div>${msg.from} @${msg.sent} ${msg.text}</div>`;
+    return `<div> ${msg.from} @${msg.sent} ${msg.text} </div>`;
 }
 
 let messageDiv = document.getElementById("mensajes");

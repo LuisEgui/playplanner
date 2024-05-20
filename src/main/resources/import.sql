@@ -55,13 +55,13 @@ VALUES (2, null, '2024-03-03T19:00', false, 'Holaa!', 1, null, 4);
 
 -- Insertar reportes
 INSERT INTO Mensaje (id, date_read, date_sent, is_report, texto, partido_id, recipient_id, sender_id)
-VALUES (3, '2024-03-03T19:00', '2024-03-03T18:00', true, 'El usuario pepe esta spameando el chat', 1, null, 2);
+VALUES (3, '2024-03-03T19:00', '2024-03-03T18:00', true, 'El usuario esta spameando el chat', 1, 3, 2);
 
 INSERT INTO Mensaje (id, date_read, date_sent, is_report, texto, partido_id, recipient_id, sender_id)
-VALUES (4, null, '2024-03-03T19:00', true, 'Esto es otro reporte', 1, null, 3);
+VALUES (4, null, '2024-03-03T19:00', true, 'Esto es otro reporte', 1, 2, 3);
 
 INSERT INTO Mensaje (id, date_read, date_sent, is_report, texto, partido_id, recipient_id, sender_id)
-VALUES (5, null, '2024-03-03T19:00', true, 'Esto es otro reporte v2', 1, null, 3);
+VALUES (5, null, '2024-03-03T19:00', true, 'Esto es otro reporte v2', 1, 2, 3);
 
 -- start id numbering from a value that is larger than any assigned above
 ALTER SEQUENCE "PUBLIC"."GEN" RESTART WITH 1024;

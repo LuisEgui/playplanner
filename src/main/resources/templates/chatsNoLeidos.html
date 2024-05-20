@@ -18,7 +18,10 @@
             <div class="container-Partidos">
                 <div th:each="chat : ${chats}">
                     <div >
-                        <p>Partido # <td th:text="${chat.key}"></td>:  <td th:text="${chat.value}"></td> mensajes nuevos </p>
+                        <p>Partido # <td th:text="${chat.key}"></td>:  <td th:text="${chat.value}"></td> 
+                            <span th:if="${!isAdmin}">mensajes nuevos</span>
+                            <span th:if="${isAdmin}">reportes nuevos</span>
+                        </p>
                         
                         <div>
                             <a class="link" th:href="@{/user/match/{id}(id=${chat.key})}"> Ir al chat del partido </a>

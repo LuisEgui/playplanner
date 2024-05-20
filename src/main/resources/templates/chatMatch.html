@@ -38,9 +38,51 @@
 
             <hr>
             <h2> Participantes </h2>
+
+            <div id="reportar-y-valorar" th:unless="${u.isAdmin}">
+                <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#modalReportar"> 
+                    Reportar </button>
+                
+                <div class="modal" id="modalReportar">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3>Reportar a un usuario</h3>
+                            </div>
+
+                            <div class="modal-body">
+                                <form method="POST" th:action="@{/user/report}">
+                                    <input hidden type="text" name="idPartido" th:value="${partido.id}">
+                                    <label for="idReportado">Seleccione al participante que desea reportar </label>
+                                    <select name="idReportado" id="idReportado">
+                                        
+                                        <tr th:each="j: ${partido.juega}">
+                                            <td th:unless="${session.u.id} == ${j.user.id}">
+                                                <option type="text" th:value="${j.user.id}" th:text="${j.user.username}">
+                                                </option>
+                                            </td>
+                                        </tr>
+                                        
+                                    </select>
+                                    <textarea name="mensaje"></textarea>
+                                    <div>
+                                        <button type="submit" class=" btn btn-outline-dark reportar-btn"> Reportar</button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-bs-dismiss="modal">Cerrar</button>
+                            </div>
+                        </div>                    
+                    </div>
+                </div>
+            </div>
+            <hr>
+
             <div>
                 <tr th:each="j: ${partido.juega}">
-                    <span th:text="${j.user.username}"></span>
+                    <a th:text="${j.user.username}" th:href="@{/user/{id}(id=${j.user.id})}"></a>
                     <hr>
                 </tr>
             </div>
