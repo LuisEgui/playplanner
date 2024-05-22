@@ -1,5 +1,5 @@
-# PlayPlanner
-Basado en la plantilla: 
+# PlayPlanner - Proyecto IW
+Basado en la plantilla: https://github.com/manuel-freire/iw/tree/main/plantilla
 
 ## Dependencies
 
@@ -28,11 +28,15 @@ Si eres administrador, podrás:
 
 Podemos usar la instrucción mvn spring-boot:run desde línea de comandos para arrancar la aplicación.
 
-En el archivo /src/main/resources/import.sql podemos encontrar el script .sql que la aplicación usa para introducir datos de prueba en la BBDD. Entre estos datos de prueba se introducen los siguientes usuarios con las contraseñas que indicamos:
+En el archivo /src/main/resources/import.sql podemos encontrar el script .sql que la aplicación usa para introducir datos de prueba en la BBDD.
+Entre estos datos de prueba se introducen los siguientes usuarios con las contraseñas que indicamos:
 -Usuario: 'a', Contraseña:'aa', ADMINISTRADOR.
 -Usuario: 'b', Contraseña:'aa'.
 -Usuario: 'c', Contraseña:'aa'.
 -Usuario: 'd', Contraseña:'aa'.
+
+En cuanto a los test, están pensados para ser ejecutados con los datos que hay en import.sql, si se añaden más datos o se quitan algunos, los test podrían fallar. 
+Para ejecutarlos, una vez la aplicación esté arrancada, usamos la instrucción: mvn test -Dtest:ExternalRunner (cambiar ExternalRunner por InternalRunner si se quiere usar ese runner).
 
 ## Funcionalidades por desarrollar / terminar
 
