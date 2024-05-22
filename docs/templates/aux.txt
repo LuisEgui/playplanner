@@ -34,3 +34,18 @@
                     </div>
                 </div> 
             </div>
+
+-------------
+en get match:
+//Finalizar partido
+		if(requester == p.getCreador()){
+			model.addAttribute("creador", true);
+		}
+		else{
+			model.addAttribute("creador", false);
+		}
+
+-------------
+en crear partido
+
+partido.setCreador(requester)
