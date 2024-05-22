@@ -13,7 +13,20 @@ import java.util.List;
 
 @Entity
 @Data
+@NamedQueries({
+    @NamedQuery(name="Rating.XvaloradoPorYEnPartidoZ",
+            query="SELECT r FROM Rating r "
+                    + "WHERE r.emisor.id = :emisor_id AND r.juega.user.id = :receptor_id AND r.juega.partido.id = :partido_id"),
+    @NamedQuery(name="Rating.media",
+    query="SELECT AVG(r.valoracion) FROM Rating r "
+            + "WHERE r.juega.user.id = :receptor_id"),
+    @NamedQuery(name="Rating.numVals",
+    query="SELECT COUNT(r) FROM Rating r "
+            + "WHERE r.juega.user.id = :receptor_id"),
+})
 public class Rating {
+
+    public static int MAXVAL = 10;
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gen")
@@ -22,8 +35,6 @@ public class Rating {
 
     @ManyToOne
     private User emisor;
-    @ManyToOne
-    private User receptor;
     
     @ManyToOne
     private Juega juega;

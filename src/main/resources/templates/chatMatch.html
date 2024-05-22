@@ -36,6 +36,44 @@
                 </div>
             </div>
 
+            <div th:if="${creador}">
+                <button class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#modalFinalizar"> 
+                    Finalizar </button>
+
+                    <div class="modal" id="modalFinalizar">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h3>Resultado del partido</h3>
+                                </div>
+    
+                                <div class="modal-body">
+                                    <div class="equipos">
+                                        <h5>Elige los participantes del Equipo 1</h5>
+
+                                        <tr th:each="j: ${partido.juega}">
+                                            <input type="checkbox" th:id="${j.user.username}" th:value="${j.user.username}" />
+                                            <label for="${j.user.username}" th:text="${j.user.username}"></label>
+                                        </tr>
+                                    </div>
+                                    <hr>
+
+                                    <div class="resultado">
+                                        Equipo 1 
+                                        <input type="number" id="resultadoEquipo1" name = "resultadoEquipo1" min="0" style="width:100px" />
+                                        <input type="number" id="resultadoEquipo2" name = "resultadoEquipo2" min="0" style="width:100px" />
+                                    </div>
+                                </div>
+    
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-bs-dismiss="modal">Cerrar</button>
+                                </div>
+                            </div>                    
+                        </div>
+                    </div>
+    
+            </div>
+
             <hr>
             <h2> Participantes </h2>
 
@@ -77,8 +115,54 @@
                         </div>                    
                     </div>
                 </div>
+
+                <button class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#modalValorar"> 
+                    Valorar </button>
+                
+                <div class="modal" id="modalValorar">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3>Valorar a un usuario</h3>
+                            </div>
+
+                            <div class="modal-body">
+                                <form method="POST" th:action="@{/user/rate}">
+                                    <input hidden type="text" name="idPartido" th:value="${partido.id}">
+                                    <label for="idValorado">Seleccione al participante que desea valorar </label>
+                                    <select name="idValorado" id="idValorado">
+                                        
+                                        <tr th:each="j: ${partido.juega}">
+                                            <td th:unless="${session.u.id} == ${j.user.id}">
+                                                <option type="text" th:value="${j.user.id}" th:text="${j.user.username}">
+                                                </option>
+                                            </td>
+                                        </tr>
+                                        
+                                    </select>
+
+                                    <select name="valoracion">
+                                        <tr th:each="v: ${valoraciones}">
+                                            <option type="text" th:value="${v}" th:text="${v}"></option>
+                                        </tr>
+                                    </select>
+                                    
+                                    <div>
+                                        <button type="submit" class=" btn btn-outline-dark"> Valorar </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-bs-dismiss="modal">Cerrar</button>
+                            </div>
+                        </div>                    
+                    </div>
+                </div>
             </div>
             <hr>
+
+            
 
             <div>
                 <tr th:each="j: ${partido.juega}">

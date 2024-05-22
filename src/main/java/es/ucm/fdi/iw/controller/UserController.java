@@ -9,6 +9,7 @@ import lombok.Data;
 import es.ucm.fdi.iw.model.Court;
 import es.ucm.fdi.iw.model.Partido;
 import es.ucm.fdi.iw.model.Juega;
+import es.ucm.fdi.iw.model.Rating;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -145,6 +146,19 @@ public class UserController {
 	
 		model.addAttribute("partidosJugados", partidosJugados);
 
+		Double valoracion_media = (Double) entityManager
+			.createNamedQuery("Rating.media", Double.class)
+			.setParameter("receptor_id", id)
+			.getSingleResult();
+		
+		Long num_valoraciones = (Long) entityManager
+			.createNamedQuery("Rating.numVals", Long.class)
+			.setParameter("receptor_id", id)
+			.getSingleResult();
+
+		model.addAttribute("val_media", valoracion_media);
+		model.addAttribute("num_val", num_valoraciones);
+		
         return "user";
     }
 
@@ -302,15 +316,7 @@ public class UserController {
 		entityManager.flush(); // to get Id before commit
 
 		ObjectMapper mapper = new ObjectMapper();
-		/*
-		// construye json: método manual
-		ObjectNode rootNode = mapper.createObjectNode();
-		rootNode.put("from", sender.getUsername());
-		rootNode.put("to", u.getUsername());
-		rootNode.put("text", text);
-		rootNode.put("id", m.getId());
-		String json = mapper.writeValueAsString(rootNode);
-		*/
+		
 		// persiste objeto a json usando Jackson
 		String json = mapper.writeValueAsString(m.toTransfer());
 
@@ -389,21 +395,21 @@ public class UserController {
 
 		model.addAttribute("mensajes_chat", mensajes);
 		if(j != null) j.setUltimoAcceso(LocalDateTime.now());
+
+		//Finalizar partido
+		if(requester == p.getCreador()) {
+			model.addAttribute("creador", true);
+		} else {
+			model.addAttribute("creador", false);
+		}
+
+		//Generar lista con valoraciones contempladas
+		List<Integer> valoracionesPosibles = new ArrayList<Integer>();
+		for(int i = 0; i <= Rating.MAXVAL; i++) valoracionesPosibles.add(i);
+		model.addAttribute("valoraciones", valoracionesPosibles);
+
         return "chatMatch";
     }
-
-	@GetMapping("/endMatch")
-	public String endMatch(Model model) {
-		return "endMatch";
-	}
-
-	/*
-	 * valoraciones
-	 */
-	@GetMapping("/valuation")
-	public String valuation(Model model) {
-		return "valuation";
-	}
 
 	@GetMapping("/crearPartido")
 	public String crearPartido(@RequestParam(required = false) String deporte, @RequestParam(required = false) Long pistaId, 
@@ -552,6 +558,7 @@ public class UserController {
 			partido.setFin(fechaFin);
 			partido.setPrivate(false);
       		partido.setEstado(Partido.Estado.PREPARANDO);
+			partido.setCreador(requester);
 			partido.setChatToken(generateRandomBase64Token(12));
 			entityManager.persist(partido);
 
@@ -665,6 +672,68 @@ public class UserController {
 		return getMatch(idPartido, model, session);
 	}
 
+	@PostMapping("/rate")
+	@Transactional
+	public String rate(HttpServletResponse response, 
+	@RequestParam("idPartido") Long idPartido, 
+	@RequestParam("valoracion") Integer valoracion,
+	@RequestParam("idValorado") Long idUsuarioValorado,
+	Model model, HttpSession session) throws IOException{
+
+		User requester = getRequester(session);
+		Partido partido = entityManager.find(Partido.class, idPartido);
+		User valorado = entityManager.find(User.class, idUsuarioValorado);
+
+		//Comprobar que ambos pertenecen al partido
+		if(partido.getJuega(requester) == null) {
+			model.addAttribute("error", "No perteneces al partido");
+			return "errorAux";
+		}
+
+		if(partido.getJuega(valorado) == null) {
+			model.addAttribute("error", "El usuario reportado no pertenece al partido");
+			return "errorAux";
+		}
+
+		//Comprobar que no se quiere valorar a si mismo
+		if(requester.getId() == valorado.getId()) {
+			model.addAttribute("error", "No te puedes valorar a ti mismo");
+			return "errorAux";
+		}
+
+		//Comprobar que no le ha valorado ya en ese partido
+		Rating prev = null;
+		try {
+			prev = entityManager
+				.createNamedQuery("Rating.XvaloradoPorYEnPartidoZ", Rating.class)
+				.setParameter("emisor_id", requester.getId())
+				.setParameter("receptor_id", valorado.getId())
+				.setParameter("partido_id", partido.getId())
+				.getSingleResult();
+		} catch (NoResultException e) { }//Tragarse la excepcion si ocurre porque no ha habido resultado
+
+		if(prev != null) {
+			model.addAttribute("error", "Ya has valorado a ese jugador en ese partido");
+			return "errorAux";
+		}
+
+		//Comprobar que la valoracion es mayor o igual a 0 y menor o igual al maximo
+		if(valoracion < 0 || valoracion > Rating.MAXVAL) {
+			model.addAttribute("error", "La valoracion debe ser un numero positivo y menor que " + Rating.MAXVAL);
+			return "errorAux";
+		}
+
+		//Crear valoracion 
+		Rating r = new Rating();
+		r.setEmisor(requester);
+		r.setJuega(partido.getJuega(valorado));
+		r.setValoracion(valoracion);
+		entityManager.persist(r);
+
+		response.sendRedirect("/user/match/" + idPartido);
+		return getMatch(idPartido, model, session);
+	}
+
 	@GetMapping("/viewMatches")
 	public String viewMatches(Model model) {
 		Boolean filtrado = (Boolean) model.getAttribute("filtrado");
@@ -728,7 +797,8 @@ public class UserController {
 		return resultado;
     }
 
-	private String finalizarPartido(HttpServletResponse response, Model model, HttpSession session) {
+	
+	public String finalizarPartido(HttpServletResponse response, Model model, HttpSession session) {
 
 		boolean pertenecenAPartido = true;
 		Partido p = null;
@@ -741,7 +811,7 @@ public class UserController {
 		}
 
 		if(Math.abs(equipoA.size() - equipoB.size()) > 1) {
-			return "Equipos desiguales ";
+			//"Equipos desiguales ";
 		}
 
 		return "";
