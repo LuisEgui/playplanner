@@ -22,6 +22,8 @@
                 
                     <p><span th:text="${ganados}"></span><em><br> partidos<br> ganados</em></p>
                     <p><span th:text="${perdidos}"></span><em><br> partidos<br> perdidos</em></p>
+
+                    <p>Valoracion media: <span th:text="${val_media}"></span> (<span th:text="${num_val}"></span> valoraciones)</p>
                 </div> 
                 <h5><span th:text="${user.firstName}"></span> <span th:text="${user.lastName}"></span></h5>
             </div>
@@ -48,22 +50,11 @@
 
             <div class="container-chat">
                 <h1 class="mt-5">Perfil de <span th:text="${user.username}">Paco</span></h1>
-                <!-- recepción de mensajes -->
-                <div class="py-5 row" id="mensajes">
-                </div>
-                <!-- envío de mensajes -->
-                <div class="py-5 row ">
-                    <form th:action="@{/user/__${user.id}__/msg}" method="POST">
-                        <input type="text" id="message" placeholder="escribe a este usuario" />
-                        <button id="sendmsg" class="btn btn-secondary" type="submit">Enviar</button>
-                    </form>
-                </div>
             </div>
         </div>
     </div>
     
     <th:block th:replace="fragments/footer.html :: footer" />
 
-    <script th:src="@{/js/ajax-demo.js}"></script>
 </body>
 </html>

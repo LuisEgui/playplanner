@@ -14,28 +14,6 @@
         <div class="container">
             <h1 class="mt-5">Administración</h1>
             <hr>
-
-            <button class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#modalPartidosEnCreacion"> 
-                Ver partidos que se están organizando </button>
-
-            <div class="modal" id="modalPartidosEnCreacion">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h3>Partidos que se están organizando</h3>
-                        </div>
-
-                        <div class="modal-body">
-                            
-                        </div>
-
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-default" data-bs-dismiss="modal">Cerrar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <hr>
             
             <button class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#modalReportes"> 
                 Ver reportes </button>
@@ -47,16 +25,20 @@
                             <h3>Reportes</h3>
                         </div>
 
-
                         <div class="modal-body">
                             <tr th:each="report: ${reports}">
-                                <h4>Reporte enviado por <td th:text="${report.sender.username}"></td></h4>
+                                <h4>Reporte enviado por <td th:text="${report.sender.username}"></td> sobre <td th:text="${report.recipient.username}"></td></h4>
                                 <h5>Enviado en partido #<td th:text="${report.partido.id}"></td></h5>
                                 <td th:text="${report.texto}"></td>
 
                                 <div>
                                     <a class="link" th:href="@{/user/match/{id}(id=${report.partido.id})}"> Ir al chat del partido </a>
                                 </div>
+
+                                <form method="POST" th:action="@{/admin/marcarLeido}" class="form-marcar-leido">
+                                    <input hidden type="text" class="idPartido btn btn-outline-dark idMsj" name="idMsj" th:value="${report.id}">
+                                    <button type="submit" class="marcar-leido-btn"> Marcar como procesado </button>
+                                </form>
                                 <hr>
                             </tr>
                         </div>

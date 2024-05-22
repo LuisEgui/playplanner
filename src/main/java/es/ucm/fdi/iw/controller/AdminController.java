@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import javax.servlet.http.HttpServletResponse;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -55,7 +56,7 @@ public class AdminController {
 
 	@GetMapping("/")
     public String index(Model model) {
-        List<Mensaje> reports =  entityManager.createNamedQuery("Mensaje.reports", Mensaje.class).getResultList();
+        List<Mensaje> reports = entityManager.createNamedQuery("Mensaje.noLeidosReportes", Mensaje.class).getResultList();
 
 		log.info("Generating message list for user {} ({} messages)", 
 				"ADMIN", reports.size());
@@ -101,4 +102,22 @@ public class AdminController {
 
 		return "{\"result\": \"usuario baneado.\"}";
 	}	
+
+	@PostMapping("/marcarLeido")
+       @ResponseBody
+       @Transactional
+       public String marcarLeido(HttpServletResponse response, @RequestBody JsonNode o, Model model, HttpSession session)  {
+
+		Long idMsj = o.get("idMsj").asLong();
+
+		Mensaje msj = entityManager.find(Mensaje.class, idMsj);
+
+		if(msj == null) {
+				response.setStatus(400);
+				return "";
+		}
+
+		msj.setDateRead(LocalDateTime.now());
+		return "{\"result\": \"ok.\"}";
+    }
 }

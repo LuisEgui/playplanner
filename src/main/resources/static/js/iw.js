@@ -227,7 +227,7 @@ document.addEventListener("DOMContentLoaded", () => {
         pero sí que sirve para que el admin pueda suscribirse temporalmente al chat del partido
         al que accede, sin tener que quedarse suscrito después de salir del chat.*/
 
-        if(chat_token !== undefined ) {
+        if(typeof chat_token !== 'undefined') {
             let contains = false;
             for(let i = 0; i < subs.length; i++) {
                 if(subs[i] === "/topic/".concat(chat_token)) contains = true;

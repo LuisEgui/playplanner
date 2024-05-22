@@ -55,7 +55,7 @@
                 <label for="pista">Pista: </label>
                 <select name="pista" id="pista" required>
                     <option value="">--Por favor seleccione una pista--</option>
-                    <option th:each="pista : ${pistas}" th:value="${pista.id}" th:text="${pista.nombre}"  th:selected="${pista.id == pistaSeleccionada}"></option>
+                    <option th:each="pista : ${pistas}" th:value="${pista.id}" th:id="pista__${pista.id}__" th:text="${pista.nombre}"  th:selected="${pista.id == pistaSeleccionada}"></option>
                 </select>
                 <hr>
                 

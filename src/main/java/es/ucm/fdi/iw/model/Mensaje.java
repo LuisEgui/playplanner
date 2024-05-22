@@ -2,6 +2,7 @@ package es.ucm.fdi.iw.model;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -25,15 +26,14 @@ import lombok.AllArgsConstructor;
  */
 @Entity
 @NamedQueries({
-	@NamedQuery(name="Mensaje.countUnread",
-	query="SELECT COUNT(m) FROM Mensaje m "
-			+ "WHERE m.recipient.id = :userId AND m.dateRead = null"),
-	
 	@NamedQuery(name="Mensaje.reports", 
 	query="SELECT m FROM Mensaje m WHERE m.isReport = TRUE"),
 
-	@NamedQuery(name="Mensaje.noLeidos", 
-	query="SELECT m FROM Mensaje m WHERE m.dateRead = null")
+	@NamedQuery(name="Mensaje.noLeidosChats",
+	query="SELECT m FROM Mensaje m WHERE m.dateSent > :fechaUltimoAcceso AND m.partido.id = :partidoId AND m.isReport = FALSE"),
+	
+	@NamedQuery(name="Mensaje.noLeidosReportes",
+	query="SELECT m FROM Mensaje m WHERE m.isReport = TRUE AND m.dateRead = null")
 })
 
 //SELECT m FROM Mensaje m WHERE m.dateSent > :x AND partido.id = :idPartido;
@@ -86,8 +86,9 @@ public class Mensaje implements Transferable<Mensaje.Transfer> {
 
 	@Override
 	public Transfer toTransfer() {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 		return new Transfer(sender.getUsername(), Long.toString(partido.getId()), 
-			DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(dateSent),
+			formatter.format(dateSent),
 			dateRead == null ? null : DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(dateRead),
 			texto, id
         );

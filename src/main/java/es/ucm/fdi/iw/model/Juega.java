@@ -28,7 +28,7 @@ public class Juega {
     @ManyToOne
     private User user;
 
-    private LocalDateTime ultimoAcceso;
+    private LocalDateTime ultimoAcceso = LocalDateTime.now();
 
     @OneToMany
     @JoinColumn(name = "rating_id")

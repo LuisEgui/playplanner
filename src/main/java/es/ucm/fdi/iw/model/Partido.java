@@ -99,6 +99,9 @@ public class Partido {
 
     private Estado estado = Estado.PREPARANDO;
 
+    @ManyToOne
+    private User creador;
+
     public Partido() {
         this.juega = new ArrayList<Juega>();
     }

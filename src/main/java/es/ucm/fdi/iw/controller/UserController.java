@@ -9,6 +9,7 @@ import lombok.Data;
 import es.ucm.fdi.iw.model.Court;
 import es.ucm.fdi.iw.model.Partido;
 import es.ucm.fdi.iw.model.Juega;
+import es.ucm.fdi.iw.model.Rating;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -55,6 +56,8 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  *  User management.
@@ -143,6 +146,19 @@ public class UserController {
 	
 		model.addAttribute("partidosJugados", partidosJugados);
 
+		Double valoracion_media = (Double) entityManager
+			.createNamedQuery("Rating.media", Double.class)
+			.setParameter("receptor_id", id)
+			.getSingleResult();
+		
+		Long num_valoraciones = (Long) entityManager
+			.createNamedQuery("Rating.numVals", Long.class)
+			.setParameter("receptor_id", id)
+			.getSingleResult();
+
+		model.addAttribute("val_media", valoracion_media);
+		model.addAttribute("num_val", num_valoraciones);
+		
         return "user";
     }
 
@@ -265,35 +281,6 @@ public class UserController {
 		return "{\"status\":\"photo uploaded correctly\"}";
     }
 
-
-    /**
-     * Returns JSON with all received messages
-	
-    @GetMapping(path = "received", produces = "application/json")
-	@Transactional // para no recibir resultados inconsistentes
-	@ResponseBody  // para indicar que no devuelve vista, sino un objeto (jsonizado)
-	public List<Mensaje.Transfer> retrieveMessages(HttpSession session) {
-		User u = getRequester(session);
-
-		List<Mensaje> mensajes = new ArrayList<Mensaje>();
-
-		//Recorrer todos los partidos en los que participa, buscando mensajes no leidos.
-		//Usuario normal solo puede recibir mensajes a traves de chats de partido.
-		for(Juega j: u.getJuega()) {
-			mensajes.addAll(entityManager.createNamedQuery("Mensaje.noLeidos", Mensaje.class)
-			.setParameter("matchId", j.getPartido().getId()).getResultList());
-		}
-
-		if(u.isAdmin()) {
-			mensajes.addAll(null);//unreadREports)
-		}
-
-		log.info("Generating message list for user {} ({} messages)",
-				u.getUsername(), mensajes.size());
-		return  mensajes.stream().map(Transferable::toTransfer).collect(Collectors.toList());
-	}*/
-	
-
     /**
      * Posts a message to a match.
      * @param id of target user (source user is from ID)
@@ -329,15 +316,7 @@ public class UserController {
 		entityManager.flush(); // to get Id before commit
 
 		ObjectMapper mapper = new ObjectMapper();
-		/*
-		// construye json: método manual
-		ObjectNode rootNode = mapper.createObjectNode();
-		rootNode.put("from", sender.getUsername());
-		rootNode.put("to", u.getUsername());
-		rootNode.put("text", text);
-		rootNode.put("id", m.getId());
-		String json = mapper.writeValueAsString(rootNode);
-		*/
+		
 		// persiste objeto a json usando Jackson
 		String json = mapper.writeValueAsString(m.toTransfer());
 
@@ -398,6 +377,7 @@ public class UserController {
 		}
 
 		User requester = getRequester(session);
+		model.addAttribute("u", requester);
 		Juega j = p.getJuega(requester);
 
 		if(j == null && !requester.isAdmin()) {
@@ -415,21 +395,21 @@ public class UserController {
 
 		model.addAttribute("mensajes_chat", mensajes);
 		if(j != null) j.setUltimoAcceso(LocalDateTime.now());
+
+		//Finalizar partido
+		if(requester == p.getCreador()) {
+			model.addAttribute("creador", true);
+		} else {
+			model.addAttribute("creador", false);
+		}
+
+		//Generar lista con valoraciones contempladas
+		List<Integer> valoracionesPosibles = new ArrayList<Integer>();
+		for(int i = 0; i <= Rating.MAXVAL; i++) valoracionesPosibles.add(i);
+		model.addAttribute("valoraciones", valoracionesPosibles);
+
         return "chatMatch";
     }
-
-	@GetMapping("/endMatch")
-	public String endMatch(Model model) {
-		return "endMatch";
-	}
-
-	/*
-	 * valoraciones
-	 */
-	@GetMapping("/valuation")
-	public String valuation(Model model) {
-		return "valuation";
-	}
 
 	@GetMapping("/crearPartido")
 	public String crearPartido(@RequestParam(required = false) String deporte, @RequestParam(required = false) Long pistaId, 
@@ -578,6 +558,7 @@ public class UserController {
 			partido.setFin(fechaFin);
 			partido.setPrivate(false);
       		partido.setEstado(Partido.Estado.PREPARANDO);
+			partido.setCreador(requester);
 			partido.setChatToken(generateRandomBase64Token(12));
 			entityManager.persist(partido);
 
@@ -647,6 +628,112 @@ public class UserController {
 		return "{\"result\":".concat(num_participantes.toString()).concat( " }");		
 	}
 
+	@PostMapping("/report")
+	@Transactional
+	public String reportar(HttpServletResponse response, 
+	@RequestParam("idPartido") Long idPartido, 
+	@RequestParam("mensaje") String mensaje,
+	@RequestParam("idReportado") Long idUsuarioReportado,
+	Model model, HttpSession session) throws IOException{
+
+		User requester = getRequester(session);
+		Partido partido = entityManager.find(Partido.class, idPartido);
+		log.info("El reportado es " + idUsuarioReportado);
+		User reportado = entityManager.find(User.class, idUsuarioReportado);
+		
+		//Comprobar que el reportado no es admin
+		if(reportado.hasRole(User.Role.ADMIN)) {
+			model.addAttribute("error", "No puedes reportar al administrador");
+			return "errorAux";
+		}
+
+		//Comprobar que ambos pertenecen al partido
+		if(partido.getJuega(requester) == null) {
+			model.addAttribute("error", "No perteneces al partido");
+			return "errorAux";
+		}
+
+		if(partido.getJuega(reportado) == null) {
+			model.addAttribute("error", "El usuario reportado no pertenece al partido");
+			return "errorAux";
+		}
+
+		//Crear reporte
+		Mensaje reporte = new Mensaje();
+		reporte.setDateSent(LocalDateTime.now());
+		reporte.setPartido(partido);
+		reporte.setSender(requester);
+		reporte.setRecipient(reportado);
+		reporte.setTexto(mensaje);
+		reporte.setReport(true);
+		entityManager.persist(reporte);
+
+		response.sendRedirect("/user/match/" + idPartido);
+		return getMatch(idPartido, model, session);
+	}
+
+	@PostMapping("/rate")
+	@Transactional
+	public String rate(HttpServletResponse response, 
+	@RequestParam("idPartido") Long idPartido, 
+	@RequestParam("valoracion") Integer valoracion,
+	@RequestParam("idValorado") Long idUsuarioValorado,
+	Model model, HttpSession session) throws IOException{
+
+		User requester = getRequester(session);
+		Partido partido = entityManager.find(Partido.class, idPartido);
+		User valorado = entityManager.find(User.class, idUsuarioValorado);
+
+		//Comprobar que ambos pertenecen al partido
+		if(partido.getJuega(requester) == null) {
+			model.addAttribute("error", "No perteneces al partido");
+			return "errorAux";
+		}
+
+		if(partido.getJuega(valorado) == null) {
+			model.addAttribute("error", "El usuario reportado no pertenece al partido");
+			return "errorAux";
+		}
+
+		//Comprobar que no se quiere valorar a si mismo
+		if(requester.getId() == valorado.getId()) {
+			model.addAttribute("error", "No te puedes valorar a ti mismo");
+			return "errorAux";
+		}
+
+		//Comprobar que no le ha valorado ya en ese partido
+		Rating prev = null;
+		try {
+			prev = entityManager
+				.createNamedQuery("Rating.XvaloradoPorYEnPartidoZ", Rating.class)
+				.setParameter("emisor_id", requester.getId())
+				.setParameter("receptor_id", valorado.getId())
+				.setParameter("partido_id", partido.getId())
+				.getSingleResult();
+		} catch (NoResultException e) { }//Tragarse la excepcion si ocurre porque no ha habido resultado
+
+		if(prev != null) {
+			model.addAttribute("error", "Ya has valorado a ese jugador en ese partido");
+			return "errorAux";
+		}
+
+		//Comprobar que la valoracion es mayor o igual a 0 y menor o igual al maximo
+		if(valoracion < 0 || valoracion > Rating.MAXVAL) {
+			model.addAttribute("error", "La valoracion debe ser un numero positivo y menor que " + Rating.MAXVAL);
+			return "errorAux";
+		}
+
+		//Crear valoracion 
+		Rating r = new Rating();
+		r.setEmisor(requester);
+		r.setJuega(partido.getJuega(valorado));
+		r.setValoracion(valoracion);
+		entityManager.persist(r);
+
+		response.sendRedirect("/user/match/" + idPartido);
+		return getMatch(idPartido, model, session);
+	}
+
 	@GetMapping("/viewMatches")
 	public String viewMatches(Model model) {
 		Boolean filtrado = (Boolean) model.getAttribute("filtrado");
@@ -664,6 +751,73 @@ public class UserController {
 		return "viewMatches";
 	}
 
+	@GetMapping(path = "unread", produces = "application/json")
+	@Transactional // para no recibir resultados inconsistentes
+	@ResponseBody  // para indicar que no devuelve vista, sino un objeto (jsonizado)
+	public String unread(HttpSession session) {
+		User u = getRequester(session);
+		long unread = noLeidos(u).size();
+		session.setAttribute("unread", unread);
+		return "{\"unread\": " + unread + "}";
+	}
+
+	@GetMapping("/chatsNoLeidos")
+	@Transactional
+    public String chatsNoLeidos(Model model, HttpSession session) {
+		User u = getRequester(session);
+		List<Mensaje> lista = noLeidos(u);
+		Map<Long, Integer> mapa = new HashMap<Long, Integer>();
+		for(Mensaje m: lista) {
+				Long idPartido = m.getPartido().getId();
+				Integer v = mapa.get(idPartido);
+
+				if(v == null) mapa.put(idPartido, 1);
+				else mapa.put(idPartido, v + 1);
+		}
+		model.addAttribute("chats", mapa.entrySet());
+		model.addAttribute("isAdmin", u.isAdmin());
+		return "chatsNoLeidos";
+    }
+
+       private List<Mensaje> noLeidos(User u) {
+		List<Mensaje> resultado;
+
+		if(u.isAdmin()) {
+				resultado = entityManager.createNamedQuery("Mensaje.noLeidosReportes", Mensaje.class).getResultList();
+		} else {
+				resultado = new ArrayList<Mensaje>();
+				//Recorrer todos los partidos en los que participa, buscando mensajes no leidos.
+				//Usuario normal solo puede recibir mensajes a traves de chats de partido.
+				for(Juega j: u.getJuega()) {
+						resultado.addAll(entityManager.createNamedQuery("Mensaje.noLeidosChats", Mensaje.class)
+						.setParameter("fechaUltimoAcceso", j.getUltimoAcceso()).setParameter("partidoId", j.getPartido().getId()).getResultList());
+				}
+		}
+
+		return resultado;
+    }
+
+	
+	public String finalizarPartido(HttpServletResponse response, Model model, HttpSession session) {
+
+		boolean pertenecenAPartido = true;
+		Partido p = null;
+		List<User> equipoA = null;
+		List<User> equipoB = null;
+		List<User> todos = null;
+
+		for(User u: todos) {
+			if(p.getJuega(u) == null) pertenecenAPartido = false;
+		}
+
+		if(Math.abs(equipoA.size() - equipoB.size()) > 1) {
+			//"Equipos desiguales ";
+		}
+
+		return "";
+	}
+
+
 	private User getRequester(HttpSession session) {
 		User requester = (User)session.getAttribute("u");
 		requester = entityManager.find(User.class, requester.getId());
@@ -672,7 +826,7 @@ public class UserController {
 
 	private void suscribirA(HttpSession session, String chat_token) {
 		String topics = session.getAttribute("topics").toString();
-		topics.concat(",").concat(chat_token);
+        topics = topics.concat(",/topic/").concat(chat_token);
 		session.setAttribute("topics", topics);
 	}
 }
