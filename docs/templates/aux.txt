@@ -1,0 +1,36 @@
+<div th:if="${creador}">
+                <button class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#modalFinalizar"> 
+                    Finalizar </button>
+
+                <div class="modal" id="modalFinalizar">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3>Resultado del partido</h3>
+                            </div>
+
+                            <div class="modal-body">
+                                <div class="equipos">
+                                    <h5>Elige los participantes del Equipo 1</h5>
+                                    <tr th:each="j: ${partido.juega}">
+                                        <input type="checkbox" th:id="${j.user.username}" th:value="${j.user.username}" />
+                                        <label th:for="${j.user.username}" th:text="${j.user.username}"></label>
+                                    </tr>
+                                </div>
+                                <hr>
+                                <div class="resultado">
+                                    Equipo 1 
+                                    <input type="number" id="resultadoEquipo1" name="resultadoEquipo1" min="0" style="width: 100px;">
+                                    -
+                                    <input type="number" id="resultadoEquipo2" name="resultadoEquipo2" min="0" style="width: 100px;">
+                                     Equipo 2
+                                </div>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-bs-dismiss="modal">Finalizar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div> 
+            </div>
